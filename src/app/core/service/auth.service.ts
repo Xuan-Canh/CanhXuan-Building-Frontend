@@ -27,9 +27,13 @@ export class AuthService {
       .pipe(catchError(error => this.handleError(error)));
   }
 
+  isLoggedIn() {
+    const accessToken = localStorage.getItem('accessToken');
+    return !!accessToken;
+  }
+
   private handleError(error: HttpErrorResponse) {
     console.error('Auth error: ', error);
     return throwError(() => new Error(error.message));
   }
-
 }
