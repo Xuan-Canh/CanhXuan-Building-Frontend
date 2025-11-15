@@ -1,0 +1,27 @@
+<header class="header">
+  <div class="container">
+    <!-- Logo -->
+    <div class="logo" [routerLink]="['/home']">
+      <img src="assets/logo.png" alt="Logo">
+      <span>CX Apartment</span>
+    </div>
+
+    <!-- Navigation Menu -->
+    <nav class="nav-menu">
+      <!-- Cách 3: Loop qua menuItems -->
+      <a *ngFor="let item of menuItems"
+         [routerLink]="item.route"
+         routerLinkActive="active">
+        <i class="icon-{{item.icon}}"></i>
+        {{ item.label }}
+      </a>
+    </nav>
+
+    <!-- User Menu -->
+    <div class="user-menu">
+      <img [src]="userAvatar" alt="Avatar">
+      <span>{{ userName }}</span>
+      <button (click)="logout()">Đăng xuất</button>
+    </div>
+  </div>
+</header>

@@ -1,0 +1,15 @@
+.app-container {
+  min-height: 100vh;
+}
+
+.content-wrapper {
+  display: flex;
+  padding-top: 60px; /* header height */
+}
+
+.main-content {
+  flex: 1;
+  margin-left: 250px; /* sidebar width */
+  padding: 2rem;
+  transition: margin-left 0.3s;
+}

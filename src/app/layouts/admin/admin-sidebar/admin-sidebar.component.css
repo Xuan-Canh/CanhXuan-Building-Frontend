@@ -1,0 +1,74 @@
+/* src/app/layouts/admin/admin-sidebar/admin-sidebar.component.css */
+.sidebar {
+  width: 250px;
+  background: #2c3e50;
+  height: 100vh;
+  position: fixed;
+  left: 0;
+  top: 0;
+  padding-top: 70px;
+  transition: width 0.3s;
+  box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+}
+
+.sidebar.collapsed {
+  width: 70px;
+}
+
+.toggle-btn {
+  position: absolute;
+  top: 15px;
+  right: 10px;
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0.5rem;
+}
+
+.sidebar-menu {
+  display: flex;
+  flex-direction: column;
+  padding: 1rem 0;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  color: #ecf0f1;
+  text-decoration: none;
+  transition: all 0.3s;
+}
+
+.menu-item:hover {
+  background: #34495e;
+  color: #3498db;
+}
+
+.menu-item.active {
+  background: #3498db;
+  color: white;
+  border-left: 4px solid #2980b9;
+}
+
+.menu-item i {
+  font-size: 1.2rem;
+  min-width: 24px;
+}
+
+.label {
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.sidebar.collapsed .label {
+  display: none;
+}
+
+.sidebar.collapsed .menu-item {
+  justify-content: center;
+  padding: 1rem;
+}
