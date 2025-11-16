@@ -1,14 +1,18 @@
 import { Injectable } from '@angular/core';
 import {HttpClient, HttpErrorResponse} from "@angular/common/http";
-import {catchError, throwError} from "rxjs";
+import {BehaviorSubject, catchError, Observable, throwError} from "rxjs";
 import {User} from "../../shared/model/user";
+import { ApiResponse } from '../../shared/model/api-response';
+import {LoginResponse} from "../../shared/model/auth";
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
 
-  private authUrl = 'http:http://localhost:8080/canhxuan/auth'
+  private authUrl = 'http://localhost:8080/canhxuan/auth'
+  private loggedInSubject = new BehaviorSubject<boolean>(this.isLoggedIn());
+  loggedIn$ = this.loggedInSubject.asObservable();
 
   constructor(private http: HttpClient) { }
 
@@ -17,8 +21,8 @@ export class AuthService {
       .pipe(catchError(error => this.handleError(error)));
   }
 
-  login(username: string, password: string) {
-    return this.http.post(`${this.authUrl}/login`, { username, password})
+  login(username: string, password: string): Observable<ApiResponse<LoginResponse>> {
+    return this.http.post<ApiResponse<LoginResponse>>(`${this.authUrl}/login`, { username, password})
       .pipe(catchError(error => this.handleError(error)));
   }
 
@@ -32,8 +36,14 @@ export class AuthService {
     return !!accessToken;
   }
 
+  setLoggedIn(value: boolean) {
+    this.loggedInSubject.next(value);
+  }
+
   private handleError(error: HttpErrorResponse) {
     console.error('Auth error: ', error);
-    return throwError(() => new Error(error.message));
+    const message = error.error?.message || 'Có lỗi xảy ra';
+    return throwError(() => new Error(message));
   }
+
 }

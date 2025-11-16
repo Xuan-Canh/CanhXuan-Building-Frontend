@@ -8,7 +8,6 @@
 
     <!-- Navigation Menu -->
     <nav class="nav-menu">
-      <!-- Cách 3: Loop qua menuItems -->
       <a *ngFor="let item of menuItems"
          [routerLink]="item.route"
          routerLinkActive="active">
@@ -19,9 +18,15 @@
 
     <!-- User Menu -->
     <div class="user-menu">
-      <img [src]="userAvatar" alt="Avatar">
-      <span>{{ userName }}</span>
-      <button (click)="logout()">Đăng xuất</button>
+      <div *ngIf="isLogged; else notLogged">
+        <img [src]="userAvatar" alt="Avatar">
+        <span>{{ userName }}</span>
+        <button (click)="logout()">Logout</button>
+      </div>
+
+      <ng-template #notLogged>
+        <a routerLink="login">Login</a>
+      </ng-template>
     </div>
   </div>
 </header>

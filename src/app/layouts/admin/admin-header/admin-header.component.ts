@@ -1,6 +1,8 @@
-import { Component } from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {RouterLink, RouterLinkActive} from "@angular/router";
 import {CommonModule} from "@angular/common";
+import {AuthService} from "../../../core/service/auth.service";
+import {NotificationService} from "../../../core/service/notification.service";
 
 @Component({
   selector: 'app-admin-header',
@@ -9,8 +11,9 @@ import {CommonModule} from "@angular/common";
   templateUrl: './admin-header.component.html',
   styleUrl: './admin-header.component.css'
 })
-export class AdminHeaderComponent {
-  userName = localStorage.getItem('userName');
+export class AdminHeaderComponent implements OnInit{
+  isLogged = false;
+  userName = '';
   userAvatar = 'assets/logo.png';
   menuItems = [
     { label: 'Home', route: '', icon: 'home' },
@@ -18,11 +21,24 @@ export class AdminHeaderComponent {
     { label: 'Contact', route: 'contact', icon: 'contact' }
   ]
 
-  constructor() {
+  constructor(private authService: AuthService,
+              private notificationService: NotificationService) {
     console.log('Component loaded');
   }
 
-  logout() {
-    console.log('logout');
+  ngOnInit() {
+    console.log('admin-header loaded');
+    this.authService.loggedIn$.subscribe(value => this.isLogged = value);
+    this.userName = localStorage.getItem('username') || '';
   }
+
+  logout() {
+    this.authService.logout();
+    this.authService.setLoggedIn(false);
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('username');
+    console.log('logout');
+    this.notificationService.show('Logout successful', 'success');
+  }
+
 }
