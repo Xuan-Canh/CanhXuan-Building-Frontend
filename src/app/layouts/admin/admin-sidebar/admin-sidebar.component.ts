@@ -1,7 +1,7 @@
-// src/app/layouts/admin/admin-sidebar/admin-sidebar.component.ts
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
+import { SidebarService } from '../../../core/service/sidebar.service';
 
 interface MenuItem {
   label: string;
@@ -18,19 +18,25 @@ interface MenuItem {
 })
 export class AdminSidebarComponent {
   menuItems: MenuItem[] = [
-    { label: 'Tòa nhà', route: '/buildings', icon: 'building' },
-    { label: 'Phòng', route: '/rooms', icon: 'door' },
-    { label: 'Khách hàng', route: '/customers', icon: 'users' },
-    { label: 'Hợp đồng', route: '/contracts', icon: 'file-text' },
-    { label: 'Dịch vụ', route: '/services', icon: 'tool' },
-    { label: 'Hóa đơn', route: '/bills', icon: 'receipt' },
-    { label: 'Đơn hàng', route: '/orders', icon: 'shopping-cart' },
-    { label: 'Người dùng', route: '/users', icon: 'user' }
+    { label: 'Tòa nhà', route: '/buildings', icon: '🏢' },
+    { label: 'Phòng', route: '/rooms', icon: '🚪' },
+    { label: 'Khách hàng', route: '/customers', icon: '👥' },
+    { label: 'Hợp đồng', route: '/contracts', icon: '📄' },
+    { label: 'Dịch vụ', route: '/services', icon: '🔧' },
+    { label: 'Hóa đơn', route: '/bills', icon: '🧾' },
+    { label: 'Đơn hàng', route: '/orders', icon: '🛒' },
+    { label: 'Người dùng', route: '/users', icon: '👤' }
   ];
 
   isCollapsed = false;
 
+  constructor(private sidebarService: SidebarService) {
+    this.sidebarService.collapsed$.subscribe(collapsed => {
+      this.isCollapsed = collapsed;
+    });
+  }
+
   toggleSidebar() {
-    this.isCollapsed = !this.isCollapsed;
+    this.sidebarService.toggleSidebar();
   }
 }

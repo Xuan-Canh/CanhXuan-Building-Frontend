@@ -1,17 +1,21 @@
-<!-- src/app/layouts/admin/admin-sidebar/admin-sidebar.component.html -->
 <aside class="sidebar" [class.collapsed]="isCollapsed">
-  <button class="toggle-btn" (click)="toggleSidebar()">
-    <span *ngIf="!isCollapsed">☰</span>
-    <span *ngIf="isCollapsed">→</span>
-  </button>
+  <div class="sidebar-header">
+    <span class="sidebar-title">Menu</span>
+    <button class="toggle-button" (click)="toggleSidebar()">
+      <span *ngIf="!isCollapsed">☰</span>
+      <span *ngIf="isCollapsed">→</span>
+    </button>
+  </div>
 
-  <nav class="sidebar-menu">
-    <a *ngFor="let item of menuItems"
-       [routerLink]="item.route"
-       routerLinkActive="active"
-       class="menu-item">
-      <i class="icon-{{item.icon}}"></i>
-      <span class="label" *ngIf="!isCollapsed">{{ item.label }}</span>
-    </a>
+  <nav class="menu-list">
+    <div class="menu-group">
+      <a *ngFor="let item of menuItems"
+         [routerLink]="item.route"
+         routerLinkActive="active"
+         class="menu-link">
+        <span class="menu-icon">{{ item.icon }}</span>
+        <span class="menu-label">{{ item.label }}</span>
+      </a>
+    </div>
   </nav>
 </aside>

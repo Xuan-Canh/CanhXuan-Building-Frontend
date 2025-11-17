@@ -1,73 +1,103 @@
 <div class="building-page">
-  <h2>Danh sách Chung cư</h2>
-  <button (click)="addbuilding()" class="btn-add" *ngIf="!showForm">
-    Thêm chung cư
-  </button>
+  <div class="page-header">
+    <h2>Quản lý Chung cư</h2>
+    <button (click)="addbuilding()" class="btn-add" *ngIf="!showForm">
+      Thêm mới
+    </button>
+  </div>
 
-  <!-- Form thêm mới/chỉnh sửa -->
+  <!-- Form thêm/sửa -->
   <div class="building-form" *ngIf="showForm">
     <h3>{{ editting ? 'Chỉnh sửa chung cư' : 'Thêm chung cư mới' }}</h3>
     <form (ngSubmit)="submitBuilding()">
-      <div class="form-group">
-        <label>Tên chung cư *</label>
-        <input type="text" [(ngModel)]="newBuilding.name"
-               name="name" required class="form-control">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>
+            📝 Tên chung cư <span class="required">*</span>
+          </label>
+          <input type="text"
+                 [(ngModel)]="newBuilding.name"
+                 name="name"
+                 required
+                 placeholder="Nhập tên chung cư"
+                 class="form-control">
+        </div>
+
+        <div class="form-group">
+          <label>
+            📍 Địa chỉ <span class="required">*</span>
+          </label>
+          <input type="text"
+                 [(ngModel)]="newBuilding.address"
+                 name="address"
+                 required
+                 placeholder="Nhập địa chỉ"
+                 class="form-control">
+        </div>
+
+        <div class="form-group">
+          <label>🏗️ Số tầng</label>
+          <input type="number"
+                 [(ngModel)]="newBuilding.floors"
+                 name="floors"
+                 min="0"
+                 placeholder="0"
+                 class="form-control">
+        </div>
+
+        <div class="form-group">
+          <label>🚪 Số phòng</label>
+          <input type="number"
+                 [(ngModel)]="newBuilding.rooms"
+                 name="apartments"
+                 min="0"
+                 placeholder="0"
+                 class="form-control">
+        </div>
+
+        <div class="form-group full-width">
+          <label>📋 Mô tả</label>
+          <textarea [(ngModel)]="newBuilding.description"
+                    name="description"
+                    placeholder="Nhập mô tả chi tiết về chung cư"
+                    class="form-control"></textarea>
+        </div>
       </div>
 
-      <div class="form-group">
-        <label>Địa chỉ *</label>
-        <input type="text" [(ngModel)]="newBuilding.address"
-               name="address" required class="form-control">
-      </div>
+      <!-- Upload ảnh (chỉ khi edit) -->
+      <div class="upload-section" *ngIf="editting">
+        <h4>🖼️ Quản lý hình ảnh</h4>
 
-      <div class="form-group">
-        <label>Số tầng</label>
-        <input type="number" [(ngModel)]="newBuilding.floors"
-               name="floors" min="0" class="form-control">
-      </div>
-
-      <div class="form-group">
-        <label>Số phòng</label>
-        <input type="number" [(ngModel)]="newBuilding.rooms"
-               name="apartments" min="0" class="form-control">
-      </div>
-
-      <div class="form-group">
-        <label>Mô tả</label>
-        <textarea [(ngModel)]="newBuilding.description"
-                  name="description" rows="3" class="form-control"></textarea>
-      </div>
-
-      <!-- Upload hình ảnh (chỉ hiện khi edit) -->
-      <div class="form-group" *ngIf="editting">
-        <label>Hình ảnh</label>
-        <input type="file" multiple accept="image/*"
-               (change)="onFileSelected($event)"
-               class="form-control">
+        <div class="file-input-wrapper">
+          <input type="file"
+                 id="file-upload"
+                 multiple
+                 accept="image/*"
+                 (change)="onFileSelected($event)">
+          <label for="file-upload" class="file-input-label">
+            📤 Chọn ảnh từ máy tính
+          </label>
+        </div>
 
         <div *ngIf="selectedFiles.length > 0" class="selected-files">
-          <p>Đã chọn {{ selectedFiles.length }} file</p>
+          <p>✓ Đã chọn {{ selectedFiles.length }} file</p>
           <button type="button"
                   (click)="uploadImages(edittingId)"
                   class="btn-upload"
                   [disabled]="uploadingImage">
-            {{ uploadingImage ? 'Đang tải...' : 'Upload ảnh' }}
+            {{ uploadingImage ? '⏳ Đang tải lên...' : '✓ Upload ngay' }}
           </button>
         </div>
 
-        <!-- Hiển thị ảnh đã có -->
         <div class="images-gallery" *ngIf="buildingImages.length > 0">
-          <h4>Hình ảnh hiện tại ({{ buildingImages.length }} ảnh):</h4>
-
-          <!-- Thumbnail grid -->
+          <h4>Hình ảnh hiện tại ({{ buildingImages.length }} ảnh)</h4>
           <div class="image-grid">
-            <div *ngFor="let image of buildingImages; let i = index" class="image-item">
-              <img [src]="getImageUrl(image.fileName)"
+            <div *ngFor="let image of buildingImages" class="image-item">
+              <img [src]="getImageUrl(currentBuildingId, image.fileName)"
                    [alt]="image.fileName"
-                   class="thumbnail"
-                   (click)="openImageModal(i)">
+                   class="thumbnail">
               <button type="button"
-                      (click)="deleteImage(edittingId, image.id); $event.stopPropagation()"
+                      (click)="deleteImage(edittingId, image.id)"
                       class="btn-delete-image">
                 ✕
               </button>
@@ -78,101 +108,107 @@
 
       <div class="form-actions">
         <button type="submit" class="btn-submit" [disabled]="submitting">
-          {{submitting ? 'Đang lưu...' : 'Lưu'}}
+          {{submitting ? '⏳ Đang lưu...' : '✓ Lưu thông tin'}}
         </button>
-        <button type="button" class="btn-cancel"
-                (click)="cancelForm()" [disabled]="submitting">
-          Hủy
+        <button type="button"
+                class="btn-cancel"
+                (click)="cancelForm()"
+                [disabled]="submitting">
+          ✕ Hủy bỏ
         </button>
       </div>
     </form>
   </div>
 
-  <div *ngIf="loading" class="loading">Đang tải...</div>
+  <div *ngIf="loading" class="loading">
+    Đang tải dữ liệu...
+  </div>
 
-  <!-- Danh sách chung cư -->
+  <!-- Danh sách chung cư với carousel -->
   <div class="card-container" *ngIf="!loading && !showForm">
     <div class="building-card" *ngFor="let b of buildings">
-      <!-- Hiển thị ảnh đầu tiên của building -->
-      <div class="building-image-preview" (click)="viewBuildingImages(b.id)">
-        <img *ngIf="b.mainImage"
-             [src]="getImageUrl(b.mainImage)"
-             [alt]="b.name"
-             class="preview-image">
-        <div *ngIf="!b.mainImage" class="no-image">
-          <span>Chưa có ảnh</span>
-        </div>
-        <div class="image-badge" *ngIf="b.imageCount && b.imageCount > 0">
-          📷 {{ b.imageCount }}
-        </div>
+      <!-- Image Carousel -->
+      <div class="building-image-carousel">
+        <ng-container *ngIf="getBuildingImages(b.id).length > 0; else noImage">
+          <img [src]="getImageUrl(b.id, getCurrentImage(b.id).fileName)"
+               [alt]="b.name"
+               class="carousel-image">
+
+          <!-- Navigation buttons -->
+          <button *ngIf="getBuildingImages(b.id).length > 1"
+                  class="carousel-nav carousel-prev"
+                  (click)="previousImage(b.id)">
+            ‹
+          </button>
+          <button *ngIf="getBuildingImages(b.id).length > 1"
+                  class="carousel-nav carousel-next"
+                  (click)="nextImage(b.id)">
+            ›
+          </button>
+
+          <!-- Indicators -->
+          <div *ngIf="getBuildingImages(b.id).length > 1" class="carousel-indicators">
+            <span *ngFor="let img of getBuildingImages(b.id); let i = index"
+                  class="indicator-dot"
+                  [class.active]="i === getCarouselIndex(b.id)"
+                  (click)="setCarouselIndex(b.id, i)">
+            </span>
+          </div>
+
+          <!-- Image counter -->
+          <div class="image-counter">
+            📷 {{ getBuildingImages(b.id).length }}
+          </div>
+        </ng-container>
+
+        <ng-template #noImage>
+          <div class="no-image">
+            <div class="no-image-icon">🏢</div>
+            <div class="no-image-text">Chưa có hình ảnh</div>
+          </div>
+        </ng-template>
       </div>
 
-      <!-- Thông tin chung cư -->
+      <!-- Building info -->
       <div class="building-info">
         <h3>{{b.name}}</h3>
-        <p><strong>Địa chỉ:</strong> {{b.address}}</p>
-        <p><strong>Số tầng:</strong> {{b.floors}}</p>
-        <p><strong>Số phòng:</strong> {{b.rooms}}</p>
-        <p class="description"><strong>Mô tả:</strong> {{b.description}}</p>
+
+        <div class="info-row">
+          <span class="info-icon">📍</span>
+          <span class="info-label">Địa chỉ:</span>
+          <span>{{b.address}}</span>
+        </div>
+
+        <div class="info-row">
+          <span class="info-icon">🏗️</span>
+          <span class="info-label">Số tầng:</span>
+          <span>{{b.floors}} tầng</span>
+        </div>
+
+        <div class="info-row">
+          <span class="info-icon">🚪</span>
+          <span class="info-label">Số phòng:</span>
+          <span>{{b.rooms}} phòng</span>
+        </div>
+
+        <div class="description" *ngIf="b.description">
+          {{b.description}}
+        </div>
       </div>
 
       <!-- Actions -->
       <div class="card-actions">
-        <button (click)="editBuilding(b.id)" class="btn-edit">Sửa</button>
-        <button (click)="deletebuilding(b.id)" class="btn-delete">Xóa</button>
+        <button (click)="editBuilding(b.id)" class="btn-edit">
+          ✏️ Sửa
+        </button>
+        <button (click)="deletebuilding(b.id)" class="btn-delete">
+          🗑️ Xóa
+        </button>
       </div>
     </div>
   </div>
 
   <div *ngIf="!loading && buildings.length === 0 && !showForm" class="empty">
-    Chưa có chung cư nào
-  </div>
-
-  <!-- Modal carousel -->
-  <div class="image-modal"
-       *ngIf="showImageModal"
-       (click)="closeImageModal()"
-       (keydown)="handleKeyPress($event)"
-       tabindex="0">
-    <div class="modal-content" (click)="$event.stopPropagation()">
-      <!-- Close button -->
-      <button class="btn-close-modal" (click)="closeImageModal()">✕</button>
-
-      <!-- Previous button -->
-      <button class="btn-nav btn-prev"
-              (click)="previousImage()"
-              *ngIf="buildingImages.length > 1">
-        ‹
-      </button>
-
-      <!-- Main image -->
-      <div class="modal-image-container" *ngIf="getCurrentImage()">
-        <img [src]="getImageUrl(getCurrentImage()!.fileName)"
-             [alt]="getCurrentImage()!.fileName"
-             class="modal-image">
-
-        <!-- Image counter -->
-        <div class="image-counter">
-          {{ currenImageIndex + 1 }} / {{ buildingImages.length }}
-        </div>
-      </div>
-
-      <!-- Next button -->
-      <button class="btn-nav btn-next"
-              (click)="nextImage()"
-              *ngIf="buildingImages.length > 1">
-        ›
-      </button>
-
-      <!-- Thumbnail strip -->
-      <div class="thumbnail-strip">
-        <div *ngFor="let image of buildingImages; let i = index"
-             class="thumbnail-preview"
-             [class.active]="i === currenImageIndex"
-             (click)="currenImageIndex = i">
-          <img [src]="getImageUrl(image.fileName)" [alt]="image.fileName">
-        </div>
-      </div>
-    </div>
+    Chưa có chung cư nào được thêm
   </div>
 </div>

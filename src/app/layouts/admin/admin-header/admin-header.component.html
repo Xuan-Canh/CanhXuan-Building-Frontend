@@ -1,31 +1,42 @@
 <header class="header">
-  <div class="container">
-    <!-- Logo -->
-    <div class="logo" [routerLink]="['/home']">
-      <img src="assets/logo.png" alt="Logo">
-      <span>CX Apartment</span>
+  <div class="header-container">
+    <div class="logo-section" [routerLink]="['/home']">
+      <div class="logo-wrapper">
+        <img src="assets/logo.png" alt="Logo">
+      </div>
+      <div class="brand-text">
+        <h1>CX Apartment</h1>
+        <p>MANAGEMENT SYSTEM</p>
+      </div>
     </div>
 
-    <!-- Navigation Menu -->
-    <nav class="nav-menu">
+    <nav class="nav-section">
       <a *ngFor="let item of menuItems"
          [routerLink]="item.route"
-         routerLinkActive="active">
-        <i class="icon-{{item.icon}}"></i>
+         routerLinkActive="active"
+         [routerLinkActiveOptions]="{exact: true}"
+         class="nav-link">
         {{ item.label }}
       </a>
     </nav>
 
-    <!-- User Menu -->
-    <div class="user-menu">
-      <div *ngIf="isLogged; else notLogged">
-        <img [src]="userAvatar" alt="Avatar">
-        <span>{{ userName }}</span>
-        <button (click)="logout()">Logout</button>
-      </div>
+    <div class="user-section">
+      <ng-container *ngIf="isLogged; else notLogged">
+        <div class="user-profile">
+          <div class="avatar-wrapper">
+            <img [src]="userAvatar" alt="Avatar">
+          </div>
+          <span class="user-name">{{ userName }}</span>
+        </div>
+        <button class="logout-button" (click)="logout()">
+          Đăng xuất
+        </button>
+      </ng-container>
 
       <ng-template #notLogged>
-        <a routerLink="login">Login</a>
+        <a routerLink="login" class="login-button">
+          Đăng nhập
+        </a>
       </ng-template>
     </div>
   </div>

@@ -20,24 +20,22 @@ export class ImageService {
     const formData = new FormData();
     formData.append("file", imageFile);
     return this.http.post<ApiResponse<any>>(`${this.apiUrl}/${objectName}/${objectId}/images`, formData)
-      .pipe(map(response => response.data),
-        catchError(this.handleError));
+      .pipe(catchError(this.handleError));
   }
 
   getImages(objectName: string, objectId: number) : Observable<ApiResponse<any>> {
     return this.http.get<ApiResponse<any>>(`${this.apiUrl}/${objectName}/${objectId}/images`)
       .pipe(
-        map(response => response.data),
         catchError(this.handleError)
       );
   }
 
   deleteImage(objectName: string, objectId: number, imageId: number) : Observable<ApiResponse<any>> {
-    return this.http.delete<ApiResponse<any>>(`${this.apiUrl}/${objectName}/${objectId}/images`);
+    return this.http.delete<ApiResponse<any>>(`${this.apiUrl}/${objectName}/${objectId}/images/${imageId}`);
   }
 
-  getImageUrl(objectName: string, fileName: string) : string {
-    return `${this.apiUrl}/${objectName}/images/${fileName}`;
+  getImageUrl(objectName: string, objectId: number, fileName: string) : string {
+    return `${this.apiUrl}/${objectName}/${objectId}/images/${fileName}`;
   }
 
   private handleError(error: HttpErrorResponse) {

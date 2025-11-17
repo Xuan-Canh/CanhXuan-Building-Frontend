@@ -17,7 +17,7 @@ export const routes: Routes = [
     path: 'login', component: AuthComponent
   },
   {
-    path: 'buildings', component: BuildingComponent
+    path: 'buildings', component: BuildingComponent, canActivate: [authGuard, roleGuard], data: {roles: 'ADMIN'}
   },
   {
     path: 'rooms', component: RoomComponent

@@ -23,7 +23,7 @@ export class BuildingImageService {
     return this.imageService.deleteImage('buildings', buildingId, imageId);
   }
 
-  getBuildingImageUrl(fileName: string): string {
-    return this.imageService.getImageUrl('buildings', fileName);
+  getBuildingImageUrl(buildingId: number, fileName: string): string {
+    return this.imageService.getImageUrl('buildings', buildingId, fileName);
   }
 }

@@ -1,12 +1,12 @@
-<div class="app-container">
+<div class="app-wrapper">
   <app-admin-header></app-admin-header>
+  <app-admin-sidebar></app-admin-sidebar>
 
-  <div class="content-wrapper">
-    <app-admin-sidebar></app-admin-sidebar>
-
-    <main class="main-content">
+  <div class="content-area" [class.collapsed]="isSidebarCollapsed">
+    <div class="page-container">
       <app-notification></app-notification>
       <router-outlet></router-outlet>
-    </main>
+    </div>
+    <app-admin-footer></app-admin-footer>
   </div>
 </div>
