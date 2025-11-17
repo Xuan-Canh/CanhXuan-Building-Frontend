@@ -1,1 +1,37 @@
-<p>user works!</p>
+<div class="user-container">
+  <h2>User Management</h2>
+
+  <div class="user-table-wrapper">
+    <table class="user-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Username</th>
+          <th>Email</th>
+          <th>Phone</th>
+          <th>City</th>
+          <th>Role</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let user of users">
+          <td>{{ user.id }}</td>
+          <td>{{ user.username }}</td>
+          <td>{{ user.email }}</td>
+          <td>{{ user.phone }}</td>
+          <td>{{ user.city }}</td>
+          <td>{{ user.role }}</td>
+          <td>
+            <button class="btn-edit">Edit</button>
+            <button class="btn-delete">Delete</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div *ngIf="users.length === 0" class="no-data">
+      No users found
+    </div>
+  </div>
+</div>

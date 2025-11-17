@@ -24,7 +24,8 @@ export class AdminSidebarComponent {
     { label: 'Hợp đồng', route: '/contracts', icon: 'file-text' },
     { label: 'Dịch vụ', route: '/services', icon: 'tool' },
     { label: 'Hóa đơn', route: '/bills', icon: 'receipt' },
-    { label: 'Đơn hàng', route: '/orders', icon: 'shopping-cart' }
+    { label: 'Đơn hàng', route: '/orders', icon: 'shopping-cart' },
+    { label: 'Người dùng', route: '/users', icon: 'user' }
   ];
 
   isCollapsed = false;

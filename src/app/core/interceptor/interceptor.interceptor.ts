@@ -1,69 +1,106 @@
 import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
-import { catchError, switchMap, throwError } from 'rxjs';
+import { catchError, switchMap, throwError, BehaviorSubject, filter, take, Observable } from 'rxjs';
 import { inject } from '@angular/core';
 import { AuthService } from '../service/auth.service';
 import { Router } from '@angular/router';
 
+// Subject để quản lý trạng thái refresh token
+let isRefreshing = false;
+const refreshTokenSubject = new BehaviorSubject<string | null>(null);
+
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
   const router = inject(Router);
+
+  // Bỏ qua các request đến endpoint refresh token để tránh vòng lặp
+  if (req.url.includes('/refresh')) {
+    return next(req);
+  }
+
   const accessToken = localStorage.getItem('accessToken');
 
-  // Clone request and add Authorization header if token exists
-  const authRequest = accessToken
-    ? req.clone({
-      setHeaders: {
-        Authorization: `Bearer ${accessToken}`
-      }
-    })
-    : req;
+  // Clone request và thêm Authorization header nếu có token
+  const authRequest = addTokenToRequest(req, accessToken);
 
-  // Send the cloned request with the token
   return next(authRequest).pipe(
     catchError((error: HttpErrorResponse) => {
-      // Handle 401 Unauthorized - Token expired or invalid
+      // Chỉ xử lý lỗi 401
       if (error.status === 401) {
-        const refreshToken = localStorage.getItem('refreshToken');
-
-        if (refreshToken) {
-          // // Try to refresh the token
-          // return authService.refreshToken().pipe(
-          //   switchMap((response: any) => {
-          //     // Save new access token
-          //     localStorage.setItem('accessToken', response.accessToken);
-          //
-          //     // Retry the original request with new token
-          //     const retryRequest = req.clone({
-          //       setHeaders: {
-          //         Authorization: `Bearer ${response.accessToken}`
-          //       }
-          //     });
-          //
-          //     return next(retryRequest);
-          //   }),
-          //   catchError((refreshError) => {
-          //     // Refresh token also failed - redirect to login
-          //     localStorage.clear();
-          //     router.navigate(['/login']);
-          //     return throwError(() => refreshError);
-          //   })
-          // );
-        } else {
-          // No refresh token - redirect to login
-          localStorage.clear();
-          router.navigate(['/login']);
-          return throwError(() => error);
-        }
+        return handle401Error(req, next, authService, router);
       }
-
-      // Handle 403 Forbidden - No permission
-      if (error.status === 403) {
-        console.error('Forbidden - Insufficient permissions');
-        alert('You do not have permission to access this resource.');
-      }
-
-      // Handle other errors
       return throwError(() => error);
     })
   );
 };
+
+// Helper function để thêm token vào request
+function addTokenToRequest(req: any, token: string | null) {
+  if (token) {
+    return req.clone({
+      setHeaders: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+  }
+  return req;
+}
+
+// Xử lý lỗi 401 với cơ chế queuing requests
+function handle401Error(
+  req: any,
+  next: any,
+  authService: AuthService,
+  router: Router
+): Observable<any> {
+
+  // Nếu đang refresh token, queue request này
+  if (isRefreshing) {
+    return refreshTokenSubject.pipe(
+      filter(token => token !== null),
+      take(1),
+      switchMap(token => {
+        return next(addTokenToRequest(req, token));
+      })
+    );
+  }
+
+  // Bắt đầu quá trình refresh token
+  isRefreshing = true;
+  refreshTokenSubject.next(null);
+
+  const refreshToken = localStorage.getItem('refreshToken');
+
+  if (!refreshToken) {
+    isRefreshing = false;
+    handleLogout(router);
+    return throwError(() => new Error('No refresh token available'));
+  }
+
+  return authService.refreshToken(refreshToken).pipe(
+    switchMap((response: any) => {
+      isRefreshing = false;
+
+      const newAccessToken = response.accessToken;
+      localStorage.setItem('accessToken', newAccessToken);
+
+      // Thông báo cho các request đang chờ
+      refreshTokenSubject.next(newAccessToken);
+
+      // Retry request ban đầu với token mới
+      return next(addTokenToRequest(req, newAccessToken));
+    }),
+    catchError((error) => {
+      isRefreshing = false;
+      refreshTokenSubject.next(null);
+      handleLogout(router);
+      return throwError(() => error);
+    })
+  );
+}
+
+// Helper function để logout
+function handleLogout(router: Router): void {
+  localStorage.removeItem('accessToken');
+  localStorage.removeItem('refreshToken');
+  router.navigate(['/login']);
+}

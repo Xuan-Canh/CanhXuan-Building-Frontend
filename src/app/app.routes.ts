@@ -8,6 +8,9 @@ import {ContractComponent} from "./features/contract/contract.component";
 import {ServiceComponent} from "./features/service/service.component";
 import {BillComponent} from "./features/bill/bill.component";
 import {OrderComponent} from "./features/order/order.component";
+import {UserComponent} from "./features/user/user.component";
+import {authGuard} from "./core/guard/auth.guard";
+import {roleGuard} from "./core/guard/role.guard";
 
 export const routes: Routes = [
   {
@@ -33,5 +36,8 @@ export const routes: Routes = [
   },
   {
     path: 'orders', component: OrderComponent
+  },
+  {
+    path: 'users', component: UserComponent, canActivate: [authGuard, roleGuard], data: {roles: 'ADMIN'}
   }
 ];

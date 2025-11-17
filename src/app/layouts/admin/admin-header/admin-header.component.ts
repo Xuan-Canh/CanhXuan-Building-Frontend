@@ -35,8 +35,7 @@ export class AdminHeaderComponent implements OnInit{
   logout() {
     this.authService.logout();
     this.authService.setLoggedIn(false);
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('username');
+    localStorage.clear();
     console.log('logout');
     this.notificationService.show('Logout successful', 'success');
   }

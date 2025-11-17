@@ -37,7 +37,9 @@ export class AuthComponent {
             this.authService.setLoggedIn(true);
             console.log('Login successful', response);
             localStorage.setItem('accessToken', response.data.accessToken);
+            localStorage.setItem('refreshToken', response.data.refreshToken);
             localStorage.setItem('username', response.data.username);
+            localStorage.setItem('role', response.data.role)
             this.router.navigate(['']);
             this.nofificationService.show(response.message, 'success');
           } else {
