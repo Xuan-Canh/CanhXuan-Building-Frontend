@@ -1,8 +1,9 @@
 import { Customer } from "./customer";
 import { Room } from "./room";
+import { Service } from "./service";
 
 export interface ContractDto {
-  customerId: number;
+  customer: Customer;
   roomId: number;
   startDate: Date;
   endDate: Date;
@@ -10,9 +11,10 @@ export interface ContractDto {
   monthlyRent: number;
   paymentDueDate: number;
   note: string;
+  services: Service[];
 }
 
-export interface Contract{
+export interface Contract {
   id: number;
   customer: Customer;
   room: Room;
@@ -22,4 +24,6 @@ export interface Contract{
   monthlyRent: number;
   paymentDueDate: number;
   note: string;
+  services: Service[];
 }
+

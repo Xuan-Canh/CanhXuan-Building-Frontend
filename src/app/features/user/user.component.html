@@ -1,37 +1,110 @@
-<div class="user-container">
-  <h2>User Management</h2>
+<div class="user-page">
+  <div class="page-header">
+    <h2>👤 Quản lý Người dùng</h2>
+    <button class="btn-add" (click)="showCreateForm()">
+      Thêm người dùng
+    </button>
+  </div>
 
-  <div class="user-table-wrapper">
-    <table class="user-table">
+  <!-- Main Table -->
+  <div class="table-container" *ngIf="!state.showForm">
+    <div class="loading" *ngIf="state.isLoading">
+      Đang tải dữ liệu...
+    </div>
+
+    <div class="empty" *ngIf="!state.isLoading && users.length === 0">
+      Chưa có người dùng nào
+    </div>
+
+    <table class="data-table" *ngIf="!state.isLoading && users.length > 0">
       <thead>
-        <tr>
-          <th>ID</th>
-          <th>Username</th>
-          <th>Email</th>
-          <th>Phone</th>
-          <th>City</th>
-          <th>Role</th>
-          <th>Actions</th>
-        </tr>
+      <tr>
+        <th>ID</th>
+        <th>Username</th>
+        <th>Email</th>
+        <th>Số điện thoại</th>
+        <th>Thành phố</th>
+        <th>Vai trò</th>
+        <th>Thao tác</th>
+      </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let user of users">
-          <td>{{ user.id }}</td>
-          <td>{{ user.username }}</td>
-          <td>{{ user.email }}</td>
-          <td>{{ user.phone }}</td>
-          <td>{{ user.city }}</td>
-          <td>{{ user.role }}</td>
-          <td>
-            <button class="btn-edit">Edit</button>
-            <button class="btn-delete">Delete</button>
-          </td>
-        </tr>
+      <tr *ngFor="let user of users">
+        <td>{{user.id}}</td>
+        <td>{{user.username}}</td>
+        <td>{{user.email}}</td>
+        <td>{{user.phone || '-'}}</td>
+        <td>{{user.city || '-'}}</td>
+        <td>
+            <span [class]="'role-badge role-' + user.role.toLowerCase()">
+              {{user.role}}
+            </span>
+        </td>
+        <td>
+          <div class="actions">
+            <button class="btn-edit" (click)="showEditForm(user)">Sửa</button>
+            <button class="btn-delete" (click)="deleteUser(user.id)">Xóa</button>
+          </div>
+        </td>
+      </tr>
       </tbody>
     </table>
+  </div>
 
-    <div *ngIf="users.length === 0" class="no-data">
-      No users found
+  <!-- Form Create/Edit -->
+  <div class="form-container" *ngIf="state.showForm">
+    <div class="form-header">
+      <h3>{{state.isEditing ? '✏️ Chỉnh sửa người dùng' : '➕ Thêm người dùng mới'}}</h3>
     </div>
+    <form class="user-form" (ngSubmit)="onSubmit()">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Username *</label>
+          <input type="text" [(ngModel)]="userDto.username" name="username"
+                 placeholder="Nhập username" required />
+        </div>
+        <div class="form-group">
+          <label>Email *</label>
+          <input type="email" [(ngModel)]="userDto.email" name="email"
+                 placeholder="Nhập email" required />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Số điện thoại</label>
+          <input type="text" [(ngModel)]="userDto.phone" name="phone"
+                 placeholder="Nhập số điện thoại" />
+        </div>
+        <div class="form-group">
+          <label>Thành phố</label>
+          <input type="text" [(ngModel)]="userDto.city" name="city"
+                 placeholder="Nhập thành phố" />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Password *</label>
+          <input type="password" [(ngModel)]="userDto.password" name="password"
+                 placeholder="Nhập mật khẩu" [required]="!state.isEditing" />
+        </div>
+        <div class="form-group">
+          <label>Vai trò *</label>
+          <select [(ngModel)]="userDto.role" name="role" required>
+            <option value="ADMIN">Admin</option>
+            <option value="USER">User</option>
+            <option value="MANAGER">Manager</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn-submit" [disabled]="state.isSubmitting">
+          {{state.isSubmitting ? 'Đang xử lý...' : (state.isEditing ? 'Lưu thay đổi' : 'Thêm người dùng')}}
+        </button>
+        <button type="button" class="btn-cancel" (click)="cancelForm()">Hủy</button>
+      </div>
+    </form>
   </div>
 </div>

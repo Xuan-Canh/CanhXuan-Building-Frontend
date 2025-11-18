@@ -1,6 +1,9 @@
 <div class="room-container">
   <div class="room-header">
     <h2>Quản lý phòng</h2>
+    <button class="btn-add" (click)="showCreateForm()">
+      Thêm phòng mới
+    </button>
   </div>
 
   <div class="search-section">
@@ -10,7 +13,6 @@
       <option value="">Tất cả tòa nhà</option>
       <option *ngFor="let building of buildings" [value]="building.id">{{building.name}}</option>
     </select>
-    <button class="btn btn-success" (click)="showCreateForm()">➕ Thêm phòng mới</button>
   </div>
 
   <div class="table-container">

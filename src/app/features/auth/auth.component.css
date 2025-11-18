@@ -64,6 +64,8 @@
   margin: 0 auto 20px;
   box-shadow: var(--shadow-lg);
   animation: pulse 2s ease-in-out infinite;
+  position: relative;
+  padding: 2px;
 }
 
 @keyframes pulse {
@@ -71,26 +73,46 @@
   50% { transform: scale(1.05); }
 }
 
-.logo-wrapper::before {
-  content: '🏢';
-  font-size: 48px;
-  filter: brightness(0) invert(1);
+.logo-wrapper::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+  border-radius: var(--radius-md);
+  opacity: 0;
+  transition: opacity 0.3s;
+  z-index: -1;
+  filter: blur(8px);
 }
 
-.auth-header h2 {
+.logo-wrapper:hover::after {
+  opacity: 0.5;
+}
+
+.logo-wrapper img {
+  width: 56px;
+  height: 56px;
+  filter: brightness(0) invert(1);
+  border-radius: var(--radius-sm);
+}
+
+.brand-text h2 {
   font-size: 28px;
   font-weight: 700;
   background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  margin-bottom: 8px;
+  margin: 0 0 8px 0;
 }
 
-.auth-header p {
+.brand-text p {
+  font-size: 11px;
   color: #64748b;
-  font-size: 14px;
   font-weight: 500;
+  margin: 0;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
 }
 
 .auth-form {
@@ -114,16 +136,8 @@
   gap: 8px;
 }
 
-.form-group label::before {
+.label-icon {
   font-size: 18px;
-}
-
-.form-group label[for="username"]::before {
-  content: '👤';
-}
-
-.form-group label[for="password"]::before {
-  content: '🔒';
 }
 
 .input-wrapper {
@@ -136,7 +150,7 @@
   border: 2px solid #e2e8f0;
   border-radius: var(--radius-sm);
   font-size: 15px;
-  transition: all 0.3s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   font-family: inherit;
 }
 
@@ -159,7 +173,7 @@
   font-weight: 600;
   font-size: 15px;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: var(--shadow-md);
   margin-top: 8px;
 }
@@ -167,6 +181,10 @@
 .btn-login:hover:not(:disabled) {
   transform: translateY(-2px);
   box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4);
+}
+
+.btn-login:active:not(:disabled) {
+  transform: translateY(0);
 }
 
 .btn-login:disabled {
@@ -186,13 +204,15 @@
   color: #64748b;
   font-size: 13px;
   margin-bottom: 12px;
+  font-weight: 500;
 }
 
 .auth-footer a {
   color: var(--primary);
   text-decoration: none;
   font-weight: 600;
-  transition: all 0.3s;
+  font-size: 14px;
+  transition: all 0.3s ease;
 }
 
 .auth-footer a:hover {
@@ -215,7 +235,12 @@
     height: 64px;
   }
 
-  .logo-wrapper::before {
-    font-size: 36px;
+  .logo-wrapper img {
+    width: 44px;
+    height: 44px;
+  }
+
+  .brand-text h2 {
+    font-size: 24px;
   }
 }

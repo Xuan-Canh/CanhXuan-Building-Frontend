@@ -25,7 +25,8 @@ export class CustomerComponent implements OnInit {
     email: '',
     dateOfBirth: new Date(),
     address: '',
-    status: 'active'
+    status: 'active',
+    gender: ''
 };
 
   customerDto : CustomerDto = this.initCustomerDto();
@@ -134,7 +135,8 @@ export class CustomerComponent implements OnInit {
       email: '',
       dateOfBirth: new Date(),
       address: '',
-      status: 'active'
+      status: 'active',
+      gender: ''
     }
   }
 
@@ -155,7 +157,8 @@ export class CustomerComponent implements OnInit {
       email: '',
       dateOfBirth: new Date(),
       address: '',
-      status: 'active'
+      status: 'active',
+      gender: ''
     }
   }
 }

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Room, RoomImage } from '../../shared/model/room';
+import {Room, RoomDto, RoomImage} from '../../shared/model/room';
 import {environment} from "../../shared/model/enviroment";
 import {ApiResponse} from "../../shared/model/api-response";
 
@@ -29,12 +29,12 @@ export class RoomService {
     return this.http.get<ApiResponse<Room>>(`${this.apiUrl}/${id}`);
   }
 
-  create(buildingId: number, room: Room): Observable<ApiResponse<Room>> {
-    return this.http.post<ApiResponse<Room>>(`${this.apiUrl}/building/${buildingId}`, room);
+  create(buildingId: number, roomDto: RoomDto): Observable<ApiResponse<Room>> {
+    return this.http.post<ApiResponse<Room>>(`${this.apiUrl}/building/${buildingId}`, roomDto);
   }
 
-  update(id: number, room: Room): Observable<ApiResponse<Room>> {
-    return this.http.put<ApiResponse<Room>>(`${this.apiUrl}/${id}`, room);
+  update(id: number, roomDto: RoomDto): Observable<ApiResponse<Room>> {
+    return this.http.put<ApiResponse<Room>>(`${this.apiUrl}/${id}`, roomDto);
   }
 
   delete(id: number): Observable<ApiResponse<void>> {

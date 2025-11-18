@@ -1,92 +1,172 @@
-<div>
-  <h2>Quan ly khach hang</h2>
+<div class="customer-page">
+  <div class="page-header">
+    <h2>👥 Quản lý Khách hàng</h2>
+    <button class="btn-add" (click)="showCreateForm()">
+      Thêm khách hàng
+    </button>
+  </div>
 
-  <button (click)="showCreateForm()">Them khach hang</button>
+  <!-- Main Table -->
+  <div class="table-container" *ngIf="!state.showForm && !state.viewDetials">
+    <div class="loading" *ngIf="state.isLoading">
+      Đang tải dữ liệu...
+    </div>
 
-  <div>
-    <table>
+    <div class="empty" *ngIf="!state.isLoading && customers.length === 0">
+      Chưa có khách hàng nào
+    </div>
+
+    <table class="data-table" *ngIf="!state.isLoading && customers.length > 0">
       <thead>
       <tr>
         <th>ID</th>
-        <th>Ten khach hang</th>
+        <th>Tên khách hàng</th>
+        <th>Gioi tinh</th>
         <th>CCCD</th>
-        <th>So dien thoai</th>
+        <th>Số điện thoại</th>
         <th>Email</th>
-        <th>Ngay sinh</th>
-        <th>Dia chi</th>
-        <th>Trang thai</th>
+        <th>Ngày sinh</th>
+        <th>Địa chỉ</th>
+        <th>Trạng thái</th>
+        <th>Thao tác</th>
       </tr>
       </thead>
       <tbody>
       <tr *ngFor="let customer of customers">
         <td>{{customer.id}}</td>
         <td>{{customer.fullname}}</td>
+        <td>{{customer.gender}}</td>
         <td>{{customer.cccd}}</td>
         <td>{{customer.phone}}</td>
         <td>{{customer.email}}</td>
-        <td>{{customer.dateOfBirth}}</td>
+        <td>{{customer.dateOfBirth | date:'dd/MM/yyyy'}}</td>
         <td>{{customer.address}}</td>
-        <td>{{customer.status}}</td>
         <td>
-          <button (click)="viewDetails(customer.id)">Detail</button>
-          <button (click)="showEditForm(customer)">edit</button>
-          <button (click)="onDelete(customer.id)">delete</button>
+            <span [class]="'status-badge status-' + customer.status.toLowerCase()">
+              {{customer.status}}
+            </span>
+        </td>
+        <td>
+          <div class="actions">
+            <button class="btn-edit" (click)="showEditForm(customer)">Sửa</button>
+            <button class="btn-delete" (click)="onDelete(customer.id)">Xóa</button>
+          </div>
         </td>
       </tr>
       </tbody>
     </table>
   </div>
 
-  <div *ngIf="state.showForm">
-    <h3>{{state.isEditing? 'Chinh sua thong tin khach hang' : 'them moi khach hang'}}</h3>
-    <form (ngSubmit)="OnSubmit()">
-      <input type="text" placeholder="Ten khach> hang" [(ngModel)]="customerDto.fullname" name="fullname" required />
-      <input type="text" placeholder="CCCD" [(ngModel)]="customerDto.cccd" name="cccd" required />
-      <input type="text" placeholder="So dien thoai" [(ngModel)]="customerDto.phone" name="phone" required />
-      <input type="email" placeholder="Email" [(ngModel)]="customerDto.email" name="email" required />
-      <input type="date" placeholder="Ngay sinh" [(ngModel)]="customerDto.dateOfBirth" name="dateOfBirth" required />
-      <input type="text" placeholder="Dia chi" [(ngModel)]="customerDto.address" name="address" required />
-      <select [(ngModel)]="customerDto.status" name="status" required>
-        <option value="ACTIVE">ACTIVE</option>
-        <option value="INACTIVE">INACTIVE</option>
-      </select>
-      <button type="submit">{{state.isEditing ? 'Luu thay doi' : 'Them khach hang'}}</button>
+  <!-- Form Create/Edit -->
+  <div class="form-container" *ngIf="state.showForm">
+    <div class="form-header">
+      <h3>{{state.isEditing ? '✏️ Chỉnh sửa khách hàng' : '➕ Thêm khách hàng mới'}}</h3>
+    </div>
+    <form class="customer-form" (ngSubmit)="OnSubmit()">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Tên khách hàng *</label>
+          <input type="text" [(ngModel)]="customerDto.fullname" name="fullname" required />
+        </div>
+        <div class="form-group">
+          <label>CCCD *</label>
+          <input type="text" [(ngModel)]="customerDto.cccd" name="cccd" required />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Số điện thoại *</label>
+          <input type="text" [(ngModel)]="customerDto.phone" name="phone" required />
+        </div>
+        <div class="form-group">
+          <label>Email *</label>
+          <input type="email" [(ngModel)]="customerDto.email" name="email" required />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Ngày sinh *</label>
+          <input type="date" [(ngModel)]="customerDto.dateOfBirth" name="dateOfBirth" required />
+        </div>
+        <div class="form-group">
+          <label>Giới tính</label>
+          <select [(ngModel)]="customerDto.gender" name="gender">
+            <option value="Nam">Nam</option>
+            <option value="Nữ">Nữ</option>
+            <option value="Khác">Khác</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group full-width">
+        <label>Địa chỉ *</label>
+        <input type="text" [(ngModel)]="customerDto.address" name="address" required />
+      </div>
+
+      <div class="form-group">
+        <label>Trạng thái *</label>
+        <select [(ngModel)]="customerDto.status" name="status" required>
+          <option value="ACTIVE">Hoạt động</option>
+          <option value="INACTIVE">Không hoạt động</option>
+        </select>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn-submit" [disabled]="state.isSubmitting">
+          {{state.isSubmitting ? 'Đang xử lý...' : (state.isEditing ? 'Lưu thay đổi' : 'Thêm khách hàng')}}
+        </button>
+        <button type="button" class="btn-cancel" (click)="cancelForm()">Hủy</button>
+      </div>
     </form>
-    <button (click)="cancelForm()">Huy</button>
   </div>
 
-  <div *ngIf="state.viewDetials">
-    <h3>Chi tiet thong tin khach hang</h3>
-    <table>
-      <thead>
-      <tr>
-        <th>ID</th>
-        <th>Ten khach hang</th>
-        <th>CCCD</th>
-        <th>So dien thoai</th>
-        <th>Email</th>
-        <th>Ngay sinh</th>
-        <th>Dia chi</th>
-        <th>Trang thai</th>
-      </tr>
-      </thead>
-      <tbody>
-      <tr *ngFor="let customer of customers">
-        <td>{{customer.id}}</td>
-        <td>{{customer.fullname}}</td>
-        <td>{{customer.cccd}}</td>
-        <td>{{customer.phone}}</td>
-        <td>{{customer.email}}</td>
-        <td>{{customer.dateOfBirth}}</td>
-        <td>{{customer.address}}</td>
-        <td>{{customer.status}}</td>
-        <td>
-          <button (click)="showEditForm(customer)">edit</button>
-          <button (click)="onDelete(customer.id)">delete</button>
-        </td>
-      </tr>
-      </tbody>
-    </table>
-    <button (click)="closeDetails()">Close</button>
+  <!-- Details View -->
+  <div class="details-container" *ngIf="state.viewDetials">
+    <div class="details-header">
+      <h3>📋 Chi tiết khách hàng</h3>
+      <button class="btn-close" (click)="closeDetails()">✕</button>
+    </div>
+    <div class="details-content">
+      <div class="detail-row">
+        <span class="detail-label">ID:</span>
+        <span class="detail-value">{{customerDetails.id}}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Tên:</span>
+        <span class="detail-value">{{customerDetails.fullname}}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Gioi tinh:</span>
+        <span class="detail-value">{{customerDetails.gender}}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">CCCD:</span>
+        <span class="detail-value">{{customerDetails.cccd}}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Số điện thoại:</span>
+        <span class="detail-value">{{customerDetails.phone}}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Email:</span>
+        <span class="detail-value">{{customerDetails.email}}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Ngày sinh:</span>
+        <span class="detail-value">{{customerDetails.dateOfBirth | date:'dd/MM/yyyy'}}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Địa chỉ:</span>
+        <span class="detail-value">{{customerDetails.address}}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Trạng thái:</span>
+        <span [class]="'status-badge status-' + customerDetails.status.toLowerCase()">
+          {{customerDetails.status}}
+        </span>
+      </div>
+    </div>
   </div>
 </div>

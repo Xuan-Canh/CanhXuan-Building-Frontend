@@ -10,4 +10,5 @@ export interface CustomerDto {
   dateOfBirth: Date;
   address: string;
   status: string;
+  gender: string;
 }

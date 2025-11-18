@@ -1,5 +1,4 @@
-export interface Room {
-  id?: number;
+export interface RoomDto {
   name: string;
   floor: number;
   capacity: number;
@@ -8,6 +7,10 @@ export interface Room {
   description: string;
   images?: RoomImage[];
   building?: any;
+}
+
+export interface Room extends RoomDto {
+  id: number;
 }
 
 export interface RoomImage {

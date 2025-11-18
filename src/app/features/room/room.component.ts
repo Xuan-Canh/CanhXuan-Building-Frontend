@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RoomService } from '../../core/service/room.service';
-import { Room, RoomImage } from '../../shared/model/room';
+import {Room, RoomDto, RoomImage} from '../../shared/model/room';
 import {Building} from "../../shared/model/building";
 import {BuildingService} from "../../core/service/building.service";
 
@@ -16,7 +16,7 @@ import {BuildingService} from "../../core/service/building.service";
 export class RoomComponent implements OnInit {
   rooms: Room[] = [];
   buildings: Building[] = [];
-  selectedRoom: Room = this.initRoom();
+  selectedRoom: RoomDto = this.initRoom();
   roomImages: RoomImage[] = [];
   searchName: string = '';
   selectedBuildingId: number = 0;
@@ -34,7 +34,7 @@ export class RoomComponent implements OnInit {
     this.loadBuildings();
   }
 
-  initRoom(): Room {
+  initRoom(): RoomDto {
     return {
       name: '',
       floor: 0,
@@ -109,9 +109,9 @@ export class RoomComponent implements OnInit {
     this.showForm = true;
   }
 
-  saveRoom(): void {
-    if (this.isEdit && this.selectedRoom.id) {
-      this.roomService.update(this.selectedRoom.id, this.selectedRoom).subscribe({
+  saveRoom(roomId?: number): void {
+    if (this.isEdit && roomId) {
+      this.roomService.update(roomId, this.selectedRoom).subscribe({
         next: () => {
           this.loadRooms();
           this.cancelForm();
