@@ -10,8 +10,9 @@ import {CrudService} from "./generic/crud.service";
 })
 export class BuildingService {
 
-  constructor(private http: HttpClient,
-              private crudService: CrudService) { }
+  constructor(
+    private crudService: CrudService
+  ) { }
 
   getAll(): Observable<ApiResponse<Building[]>> {
     return this.crudService.getAll('buildings');

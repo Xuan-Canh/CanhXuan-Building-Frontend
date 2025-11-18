@@ -589,3 +589,141 @@ textarea.form-control {
     align-items: flex-start;
   }
 }
+
+/* Modal chi tiết */
+.detail-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.detail-content {
+  background: white;
+  border-radius: var(--radius-lg);
+  max-width: 900px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-lg);
+}
+
+.detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px;
+  border-bottom: 2px solid #f1f5f9;
+}
+
+.detail-header h2 {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--dark);
+  margin: 0;
+}
+
+.btn-close {
+  background: none;
+  border: none;
+  font-size: 32px;
+  cursor: pointer;
+  color: #64748b;
+  transition: all 0.3s;
+  padding: 0;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-close:hover {
+  color: var(--error);
+  transform: rotate(90deg);
+}
+
+.detail-body {
+  padding: 24px;
+}
+
+.detail-section {
+  margin-bottom: 24px;
+}
+
+.detail-section h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--dark);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.detail-info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.detail-info-item {
+  background: #f8fafc;
+  padding: 16px;
+  border-radius: var(--radius-sm);
+  border-left: 4px solid var(--primary);
+}
+
+.detail-info-item label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.detail-info-item .value {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--dark);
+}
+
+.detail-description {
+  background: #f8fafc;
+  padding: 16px;
+  border-radius: var(--radius-sm);
+  line-height: 1.6;
+  color: #64748b;
+}
+
+.btn-view {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+  color: white;
+}
+
+.btn-view:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.no-images-message {
+  text-align: center;
+  padding: 32px;
+  background: white;
+  border-radius: var(--radius-sm);
+  color: #64748b;
+  font-size: 14px;
+}
+
+.no-images-message p {
+  margin: 0;
+  font-size: 16px;
+}

@@ -1,1 +1,43 @@
-<p>contract works!</p>
+<div>
+  <h2>Quan ly hop dong</h2>
+
+  <button (click)="showCreateForm()">Them hop dong</button>
+
+  <div *ngFor="let contract of contracts">
+    <table>
+      <thead>
+      <tr>
+        <th>Ten chu hop dong</th>
+        <th>Phong</th>
+        <th>Ngay bat dau</th>
+        <th>Ngay ket thuc</th>
+        <th>Gia thue</th>
+        <th>Tien coc</th>
+        <th>ngay thanh toan hang thang</th>
+        <th>ghi chu</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr>
+        <td>{{contract.customer.fullname}}</td>
+        <td>{{contract.room.name}}</td>
+        <td>{{contract.startDate}}</td>
+        <td>{{contract.endDate}}</td>
+        <td>{{contract.monthlyRent}}</td>
+        <td>{{contract.depositAmount}}</td>
+        <td>{{contract.paymentDueDate}}</td>
+        <td>{{contract.note}}</td>
+        <td>
+          <button (click)="showEditForm()">Edit</button>
+          <button (click)="deleteContract(contract.id)">Delete</button>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div *ngIf="state.showForm">
+    <h3>{{state.isEditting? "Chinh sua thong tin hop dong" : "Them moi hop dong"}}</h3>
+    <button (click)="cancelForm()">Huy</button>
+  </div>
+</div>

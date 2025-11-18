@@ -1,1 +1,120 @@
-<p>room works!</p>
+<div class="room-container">
+  <div class="room-header">
+    <h2>Quản lý phòng</h2>
+  </div>
+
+  <div class="search-section">
+    <input type="text" placeholder="Tìm kiếm phòng..." [(ngModel)]="searchName">
+    <button class="btn btn-primary" (click)="search()">🔍 Tìm kiếm</button>
+    <select [(ngModel)]="selectedBuildingId" (change)="filterByBuilding()">
+      <option value="">Tất cả tòa nhà</option>
+      <option *ngFor="let building of buildings" [value]="building.id">{{building.name}}</option>
+    </select>
+    <button class="btn btn-success" (click)="showCreateForm()">➕ Thêm phòng mới</button>
+  </div>
+
+  <div class="table-container">
+    <table>
+      <thead>
+      <tr>
+        <th>ID</th>
+        <th>Tên phòng</th>
+        <th>Tầng</th>
+        <th>Sức chứa</th>
+        <th>Giá</th>
+        <th>Trạng thái</th>
+        <th>Hành động</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr *ngFor="let room of rooms">
+        <td>{{room.id}}</td>
+        <td>{{room.name}}</td>
+        <td>{{room.floor}}</td>
+        <td>{{room.capacity}} người</td>
+        <td>{{room.price | number}} VNĐ</td>
+        <td>
+            <span class="status-badge"
+                  [ngClass]="{'status-available': room.status === 'available',
+                             'status-occupied': room.status === 'occupied',
+                             'status-maintenance': room.status === 'maintenance'}">
+              {{room.status === 'available' ? 'Còn trống' :
+              room.status === 'occupied' ? 'Đã thuê' : 'Bảo trì'}}
+            </span>
+        </td>
+        <td>
+          <button class="btn btn-info" (click)="viewDetail(room.id)">👁️ Xem</button>
+          <button class="btn btn-warning" (click)="showEditForm(room)">✏️ Sửa</button>
+          <button class="btn btn-danger" (click)="deleteRoom(room.id)">🗑️ Xóa</button>
+          <button class="btn btn-primary" (click)="showImages(room.id)">🖼️ Ảnh</button>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="showForm" (click)="cancelForm()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <h3>{{isEdit ? '✏️ Cập nhật phòng' : '➕ Thêm phòng mới'}}</h3>
+    <form (ngSubmit)="saveRoom()">
+      <div class="form-group">
+        <label>Tòa nhà *</label>
+        <select [(ngModel)]="selectedRoom.building" name="building" required>
+          <option *ngFor="let building of buildings" [ngValue]="building">{{building.name}}</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Tên phòng *</label>
+        <input type="text" [(ngModel)]="selectedRoom.name" name="name" required placeholder="Nhập tên phòng">
+      </div>
+      <div class="form-group">
+        <label>Tầng *</label>
+        <input type="number" [(ngModel)]="selectedRoom.floor" name="floor" required placeholder="Nhập số tầng">
+      </div>
+      <div class="form-group">
+        <label>Sức chứa *</label>
+        <input type="number" [(ngModel)]="selectedRoom.capacity" name="capacity" required placeholder="Số người">
+      </div>
+      <div class="form-group">
+        <label>Giá *</label>
+        <input type="number" [(ngModel)]="selectedRoom.price" name="price" required placeholder="Giá thuê">
+      </div>
+      <div class="form-group">
+        <label>Trạng thái</label>
+        <select [(ngModel)]="selectedRoom.status" name="status">
+          <option value="available">Còn trống</option>
+          <option value="occupied">Đã thuê</option>
+          <option value="maintenance">Bảo trì</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Mô tả</label>
+        <textarea [(ngModel)]="selectedRoom.description" name="description" placeholder="Nhập mô tả"></textarea>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-success">{{isEdit ? '💾 Cập nhật' : '➕ Thêm mới'}}</button>
+        <button type="button" class="btn btn-secondary" (click)="cancelForm()">❌ Hủy</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="showImageModal" (click)="closeImageModal()">
+  <div class="modal-content image-modal-content" (click)="$event.stopPropagation()">
+    <h3>🖼️ Hình ảnh phòng</h3>
+    <div class="image-upload">
+      <input type="file" (change)="onFileSelected($event)" accept="image/*">
+      <button class="btn btn-primary" (click)="uploadImage()">📤 Tải lên</button>
+    </div>
+    <div class="image-grid">
+      <div class="image-item" *ngFor="let image of roomImages">
+        <img [src]="getImageUrl(image.fileName)" [alt]="image.fileName">
+        <button class="btn-danger" (click)="deleteImage(image.id)">🗑️ Xóa</button>
+      </div>
+    </div>
+    <div class="form-actions" style="margin-top: 20px;">
+      <button class="btn btn-secondary" (click)="closeImageModal()">❌ Đóng</button>
+    </div>
+  </div>
+</div>

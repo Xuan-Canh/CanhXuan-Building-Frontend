@@ -5,6 +5,7 @@ import {NotificationService} from "../../core/service/notification.service";
 import {BuildingImageService} from "../../core/service/building-image.service";
 import {CommonModule} from "@angular/common";
 import {FormsModule} from "@angular/forms";
+import {forkJoin} from 'rxjs';
 
 @Component({
   selector: 'app-building',
@@ -15,18 +16,17 @@ import {FormsModule} from "@angular/forms";
 })
 export class BuildingComponent implements OnInit {
   buildings: Building[] = [];
-  buildingImages: BuildingImage[] = [];
-  buildingImageMaps: Map<number, BuildingImage[]> = new Map();
-  carouselIndexes: Map<number, number> = new Map();
   selectedFiles: File[] = [];
+  editingBuilding: Building | null = null;
 
-  loading = false;
-  showForm = false;
-  submitting = false;
-  editting = false;
-  edittingId = 0;
-  currentBuildingId = 0;
-  uploadingImage = false;
+  state = {
+    loading: false,
+    showForm: false,
+    submitting: false,
+    editing: false,
+    editingId: 0,
+    uploading: false
+  };
 
   newBuilding: CreateBuildingDto = {
     name: '',
@@ -34,7 +34,7 @@ export class BuildingComponent implements OnInit {
     floors: 0,
     rooms: 0,
     description: ''
-  }
+  };
 
   constructor(
     private buildingService: BuildingService,
@@ -47,94 +47,59 @@ export class BuildingComponent implements OnInit {
   }
 
   loadBuildings() {
-    this.loading = true;
+    this.state.loading = true;
     this.buildingService.getAll().subscribe({
       next: (response) => {
         this.buildings = response.data;
-        this.buildings.forEach(b => {
-          this.loadBuildingImages(b.id);
-          this.carouselIndexes.set(b.id, 0);
-        });
-        this.loading = false;
+        this.buildings.forEach((building) => {
+          building.mainImage = building.images[0]?.fileName || null;
+        })
+        this.state.loading = false;
       },
-      error: (err) => {
+      error: () => {
         this.noti.show('Lỗi tải danh sách chung cư', 'error');
-        this.loading = false;
+        this.state.loading = false;
       }
     });
   }
 
-  loadBuildingImages(buildingId: number) {
-    this.imageService.getBuildingImages(buildingId).subscribe({
-      next: (images) => {
-        this.buildingImageMaps.set(buildingId, images.data);
-        // Cập nhật buildingImages nếu đang edit building này
-        if (this.editting && this.currentBuildingId === buildingId) {
-          this.buildingImages = images.data;
-        }
-      },
-      error: (err) => console.error('Error loading images:', err)
-    });
+  getMainImage(buildingId: number): string | null {
+    const building = this.buildings.find(b => b.id === buildingId);
+    return building?.mainImage || null;
   }
 
-  getBuildingImages(buildingId: number): BuildingImage[] {
-    return this.buildingImageMaps.get(buildingId) || [];
-  }
-
-  getCurrentImage(buildingId: number): BuildingImage {
-    const images = this.getBuildingImages(buildingId);
-    const index = this.carouselIndexes.get(buildingId) || 0;
-    return images[index];
-  }
-
-  getCarouselIndex(buildingId: number): number {
-    return this.carouselIndexes.get(buildingId) || 0;
-  }
-
-  setCarouselIndex(buildingId: number, index: number) {
-    this.carouselIndexes.set(buildingId, index);
-  }
-
-  previousImage(buildingId: number) {
-    const images = this.getBuildingImages(buildingId);
-    const currentIndex = this.carouselIndexes.get(buildingId) || 0;
-    const newIndex = currentIndex === 0 ? images.length - 1 : currentIndex - 1;
-    this.carouselIndexes.set(buildingId, newIndex);
-  }
-
-  nextImage(buildingId: number) {
-    const images = this.getBuildingImages(buildingId);
-    const currentIndex = this.carouselIndexes.get(buildingId) || 0;
-    const newIndex = (currentIndex + 1) % images.length;
-    this.carouselIndexes.set(buildingId, newIndex);
-  }
-
-  getImageUrl(buildingId: number, fileName: string): string {
-    return this.imageService.getBuildingImageUrl(buildingId, fileName);
-  }
-
-  addbuilding() {
-    this.showForm = true;
-    this.editting = false;
-    this.newBuilding = {
-      name: '',
-      address: '',
-      floors: 0,
-      rooms: 0,
-      description: ''
-    };
+  addBuilding() {
+    this.state.showForm = true;
+    this.state.editing = false;
+    this.editingBuilding = null;
+    this.resetForm();
   }
 
   editBuilding(id: number) {
-    const building = this.buildings.find(b => b.id === id);
-    if (building) {
-      this.showForm = true;
-      this.editting = true;
-      this.edittingId = id;
-      this.currentBuildingId = id;
-      this.newBuilding = { ...building };
-      this.buildingImages = this.getBuildingImages(id);
-    }
+    this.state.editing = true;
+    this.state.editingId = id;
+    this.state.showForm = true;
+
+    // Load chi tiết building để lấy danh sách ảnh đầy đủ
+    this.buildingService.getById(id).subscribe({
+      next: (response) => {
+        this.editingBuilding = response.data;
+        this.newBuilding = {
+          name: response.data.name,
+          address: response.data.address,
+          floors: response.data.floors,
+          rooms: response.data.rooms,
+          description: response.data.description
+        };
+      },
+      error: () => {
+        this.noti.show('Lỗi tải thông tin chung cư', 'error');
+        const building = this.buildings.find(b => b.id === id);
+        if (building) {
+          this.newBuilding = { ...building };
+        }
+      }
+    });
   }
 
   submitBuilding() {
@@ -143,47 +108,57 @@ export class BuildingComponent implements OnInit {
       return;
     }
 
-    this.submitting = true;
-    const request = this.editting
-      ? this.buildingService.update(this.edittingId, this.newBuilding)
+    this.state.submitting = true;
+    const request = this.state.editing
+      ? this.buildingService.update(this.state.editingId, this.newBuilding)
       : this.buildingService.create(this.newBuilding);
 
     request.subscribe({
-      next: (data) => {
+      next: () => {
         this.noti.show(
-          this.editting ? 'Cập nhật thành công' : 'Thêm mới thành công',
+          this.state.editing ? 'Cập nhật thành công' : 'Thêm mới thành công',
           'success'
         );
         this.loadBuildings();
         this.cancelForm();
-        this.submitting = false;
       },
-      error: (err) => {
+      error: () => {
         this.noti.show('Có lỗi xảy ra', 'error');
-        this.submitting = false;
+        this.state.submitting = false;
       }
     });
   }
 
-  deletebuilding(id: number) {
+  deleteBuilding(id: number) {
     if (confirm('Bạn có chắc muốn xóa chung cư này?')) {
       this.buildingService.delete(id).subscribe({
         next: () => {
           this.noti.show('Xóa thành công', 'success');
           this.loadBuildings();
         },
-        error: (err) => {
-          this.noti.show('Lỗi khi xóa', 'error');
-        }
+        error: () => this.noti.show('Lỗi khi xóa', 'error')
       });
     }
   }
 
   cancelForm() {
-    this.showForm = false;
-    this.editting = false;
-    this.edittingId = 0;
+    this.state.showForm = false;
+    this.state.editing = false;
+    this.state.editingId = 0;
+    this.state.submitting = false;
     this.selectedFiles = [];
+    this.editingBuilding = null;
+    this.resetForm();
+  }
+
+  resetForm() {
+    this.newBuilding = {
+      name: '',
+      address: '',
+      floors: 0,
+      rooms: 0,
+      description: ''
+    };
   }
 
   onFileSelected(event: any) {
@@ -196,64 +171,58 @@ export class BuildingComponent implements OnInit {
       return;
     }
 
-    this.uploadingImage = true;
-    let uploadedCount = 0;
-    let errorCount = 0;
+    this.state.uploading = true;
 
-    // Upload từng file
-    this.selectedFiles.forEach((file, index) => {
-      this.imageService.uploadBuildingImage(buildingId, file).subscribe({
-        next: () => {
-          uploadedCount++;
-          if (uploadedCount + errorCount === this.selectedFiles.length) {
-            this.finishUpload(buildingId, uploadedCount, errorCount);
+    const uploads = this.selectedFiles.map(file =>
+      this.imageService.uploadBuildingImage(buildingId, file)
+    );
+
+    forkJoin(uploads).subscribe({
+      next: (results) => {
+        this.noti.show(`Upload thành công ${results.length} ảnh`, 'success');
+        this.selectedFiles = [];
+        this.state.uploading = false;
+
+        // Reload chi tiết building
+        this.buildingService.getById(buildingId).subscribe({
+          next: (response) => {
+            this.editingBuilding = response.data;
+            this.loadBuildings(); // Cập nhật list
           }
-        },
-        error: (err) => {
-          errorCount++;
-          console.error(`Lỗi upload file ${file.name}:`, err);
-          if (uploadedCount + errorCount === this.selectedFiles.length) {
-            this.finishUpload(buildingId, uploadedCount, errorCount);
-          }
-        }
-      });
+        });
+      },
+      error: () => {
+        this.noti.show('Có lỗi khi upload', 'error');
+        this.state.uploading = false;
+      }
     });
   }
-
-  private finishUpload(buildingId: number, successCount: number, errorCount: number) {
-    this.uploadingImage = false;
-    this.selectedFiles = [];
-
-    if (errorCount === 0) {
-      this.noti.show(`Upload thành công ${successCount} ảnh`, 'success');
-    } else if (successCount > 0) {
-      this.noti.show(`Upload ${successCount} ảnh, ${errorCount} ảnh lỗi`, 'error');
-    } else {
-      this.noti.show('Upload thất bại', 'error');
-    }
-
-    // Load lại ảnh và cập nhật UI
-    this.loadBuildingImages(buildingId);
-
-    // Reset input file
-    const fileInput = document.getElementById('file-upload') as HTMLInputElement;
-    if (fileInput) {
-      fileInput.value = '';
-    }
-  }
-
 
   deleteImage(buildingId: number, imageId: number) {
     if (confirm('Bạn có chắc muốn xóa ảnh này?')) {
       this.imageService.deleteBuildingImage(buildingId, imageId).subscribe({
         next: () => {
           this.noti.show('Xóa ảnh thành công', 'success');
-          this.loadBuildingImages(buildingId);
+
+          // Reload chi tiết building
+          this.buildingService.getById(buildingId).subscribe({
+            next: (response) => {
+              this.editingBuilding = response.data;
+              this.loadBuildings(); // Cập nhật list
+            }
+          });
         },
-        error: (err) => {
-          this.noti.show('Lỗi khi xóa ảnh', 'error');
-        }
+        error: () => this.noti.show('Lỗi khi xóa ảnh', 'error')
       });
     }
+  }
+
+  // Helper methods
+  trackByImageId(index: number, image: BuildingImage): number {
+    return image.id;
+  }
+
+  getImageUrl(buildingId: number, filename: string): string {
+    return this.imageService.getBuildingImageUrl(buildingId, filename);
   }
 }
