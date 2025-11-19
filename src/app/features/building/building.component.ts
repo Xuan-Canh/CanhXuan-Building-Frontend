@@ -18,6 +18,8 @@ export class BuildingComponent implements OnInit {
   buildings: Building[] = [];
   selectedFiles: File[] = [];
   editingBuilding: Building | null = null;
+  currentPage = 0;
+  totalPage = 0;
 
   state = {
     loading: false,
@@ -43,17 +45,21 @@ export class BuildingComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.loadBuildings();
+    this.loadBuildings(0);
   }
 
-  loadBuildings() {
+  loadBuildings(page: number) {
     this.state.loading = true;
-    this.buildingService.getAll().subscribe({
+    this.buildingService.getAll(page).subscribe({
       next: (response) => {
-        this.buildings = response.data;
+        this.buildings = response.data.content;
+        this.currentPage = response.data.number;
+        this.totalPage = response.data.totalPages;
+
         this.buildings.forEach((building) => {
           building.mainImage = building.images[0]?.fileName || null;
-        })
+          building.imageCount = building.images?.length || 0;
+        });
         this.state.loading = false;
       },
       error: () => {
@@ -62,6 +68,52 @@ export class BuildingComponent implements OnInit {
       }
     });
   }
+
+  nextPage() {
+    if (this.currentPage + 1 < this.totalPage) {
+      this.loadBuildings(this.currentPage + 1);
+    }
+  }
+
+  previousPage() {
+    if (this.currentPage > 0) {
+      this.loadBuildings(this.currentPage - 1);
+    }
+  }
+
+  goToPage(page: number) {
+    if (page >= 0 && page < this.totalPage) {
+      this.loadBuildings(page);
+    }
+  }
+
+// Helper method để tạo mảng số trang
+  getPageNumbers(): number[] {
+    const maxPages = 5; // Hiển thị tối đa 5 nút
+    const pages: number[] = [];
+
+    if (this.totalPage <= maxPages) {
+      // Hiển thị tất cả nếu ít trang
+      for (let i = 0; i < this.totalPage; i++) {
+        pages.push(i);
+      }
+    } else {
+      // Logic hiển thị thông minh
+      let startPage = Math.max(0, this.currentPage - 2);
+      let endPage = Math.min(this.totalPage - 1, startPage + maxPages - 1);
+
+      if (endPage - startPage < maxPages - 1) {
+        startPage = Math.max(0, endPage - maxPages + 1);
+      }
+
+      for (let i = startPage; i <= endPage; i++) {
+        pages.push(i);
+      }
+    }
+
+    return pages;
+  }
+
 
   getMainImage(buildingId: number): string | null {
     const building = this.buildings.find(b => b.id === buildingId);
@@ -119,7 +171,7 @@ export class BuildingComponent implements OnInit {
           this.state.editing ? 'Cập nhật thành công' : 'Thêm mới thành công',
           'success'
         );
-        this.loadBuildings();
+        this.loadBuildings(this.currentPage);
         this.cancelForm();
       },
       error: () => {
@@ -134,7 +186,7 @@ export class BuildingComponent implements OnInit {
       this.buildingService.delete(id).subscribe({
         next: () => {
           this.noti.show('Xóa thành công', 'success');
-          this.loadBuildings();
+          this.loadBuildings(this.currentPage);
         },
         error: () => this.noti.show('Lỗi khi xóa', 'error')
       });
@@ -187,7 +239,7 @@ export class BuildingComponent implements OnInit {
         this.buildingService.getById(buildingId).subscribe({
           next: (response) => {
             this.editingBuilding = response.data;
-            this.loadBuildings(); // Cập nhật list
+            this.loadBuildings(this.currentPage); // Cập nhật list
           }
         });
       },
@@ -208,7 +260,7 @@ export class BuildingComponent implements OnInit {
           this.buildingService.getById(buildingId).subscribe({
             next: (response) => {
               this.editingBuilding = response.data;
-              this.loadBuildings(); // Cập nhật list
+              this.loadBuildings(this.currentPage); // Cập nhật list
             }
           });
         },

@@ -31,7 +31,6 @@ export class RoomComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadRooms();
-    this.loadBuildings();
   }
 
   initRoom(): RoomDto {
@@ -49,6 +48,9 @@ export class RoomComponent implements OnInit {
     this.roomService.getAll().subscribe({
       next: (response) => {
         this.rooms = response.data;
+        response.data.forEach(room => {
+          this.buildings.push(room.building);
+        })
       },
       error: (error) => {
         console.error('Error loading rooms:', error);
@@ -56,16 +58,16 @@ export class RoomComponent implements OnInit {
     });
   }
 
-  loadBuildings(): void {
-    this.buildingService.getAll().subscribe({
-      next: (response) => {
-        this.buildings = response.data;
-      },
-      error: (error) => {
-        console.error('Error loading buildings:', error);
-      }
-    })
-  }
+  // loadBuildings(): void {
+  //   this.buildingService.getAll().subscribe({
+  //     next: (response) => {
+  //       this.buildings = response.data;
+  //     },
+  //     error: (error) => {
+  //       console.error('Error loading buildings:', error);
+  //     }
+  //   })
+  // }
 
   search(): void {
     if (this.searchName.trim()) {

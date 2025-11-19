@@ -18,13 +18,14 @@ interface MenuItem {
 })
 export class AdminSidebarComponent {
   menuItems: MenuItem[] = [
+    { label: 'Dashboard', route: '', icon: '🏢' },
     { label: 'Tòa nhà', route: '/buildings', icon: '🏢' },
     { label: 'Phòng', route: '/rooms', icon: '🚪' },
     { label: 'Khách hàng', route: '/customers', icon: '👥' },
     { label: 'Hợp đồng', route: '/contracts', icon: '📄' },
     { label: 'Dịch vụ', route: '/services', icon: '🔧' },
-    { label: 'Hóa đơn', route: '/bills', icon: '🧾' },
-    { label: 'Đơn hàng', route: '/orders', icon: '🛒' },
+    { label: 'Hóa đơn', route: '/invoices', icon: '🧾' },
+    // { label: 'Đơn hàng', route: '/orders', icon: '🛒' },
     { label: 'Người dùng', route: '/users', icon: '👤' }
   ];
 

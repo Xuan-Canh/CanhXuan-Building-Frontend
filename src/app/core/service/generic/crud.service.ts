@@ -13,8 +13,8 @@ export class CrudService {
 
   constructor(private http: HttpClient) { }
 
-  getAll(objectName: string) : Observable<ApiResponse<any>> {
-    return this.http.get<ApiResponse<any>>(`${this.apiUrl}/${objectName}`)
+  getAll(objectName: string, page?: number) : Observable<ApiResponse<any>> {
+    return this.http.get<ApiResponse<any>>(`${this.apiUrl}/${objectName}?page=${page}`)
       .pipe(catchError(this.handleError));
   }
 

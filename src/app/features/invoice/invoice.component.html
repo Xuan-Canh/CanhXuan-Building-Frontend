@@ -1,0 +1,246 @@
+<div class="invoice-page">
+  <div class="page-header">
+    <h2>Quản lý Hóa đơn</h2>
+    <button (click)="addInvoice()" class="btn-add" *ngIf="!state.showForm">
+      Tạo hóa đơn mới
+    </button>
+  </div>
+
+  <!-- Form tạo hóa đơn -->
+  <div class="invoice-form" *ngIf="state.showForm">
+    <h3>Tạo hóa đơn mới</h3>
+    <form (ngSubmit)="submitInvoice()">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Hợp đồng <span class="required">*</span></label>
+          <select [(ngModel)]="newInvoice.contractId"
+                  name="contractId"
+                  (change)="onContractChange()"
+                  class="form-control"
+                  required>
+            <option value="0">-- Chọn hợp đồng --</option>
+            <option *ngFor="let contract of contracts" [value]="contract.id">
+              {{ contract.customer.fullname }} - Phòng {{ contract.room.name }}
+            </option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Ngày lập <span class="required">*</span></label>
+          <input type="date"
+                 [(ngModel)]="newInvoice.invoiceDate"
+                 name="invoiceDate"
+                 class="form-control"
+                 required>
+        </div>
+
+        <div class="form-group">
+          <label>Hạn thanh toán <span class="required">*</span></label>
+          <input type="date"
+                 [(ngModel)]="newInvoice.dueDate"
+                 name="dueDate"
+                 class="form-control"
+                 required>
+        </div>
+
+        <div class="form-group full-width">
+          <label>Ghi chú</label>
+          <textarea [(ngModel)]="newInvoice.note"
+                    name="note"
+                    class="form-control"
+                    rows="3"></textarea>
+        </div>
+      </div>
+
+      <!-- Service usage -->
+      <div class="service-section" *ngIf="newInvoice.contractId > 0">
+        <h4>Thông tin sử dụng dịch vụ</h4>
+        <div class="service-grid">
+          <div class="service-item" *ngFor="let service of services">
+            <h5>{{ service.name }}</h5>
+            <p class="service-price">{{ formatCurrency(service.price) }} / {{ service.unit }}</p>
+
+            <div *ngIf="service.type === 'METERED'" class="meter-inputs">
+              <div class="form-group">
+                <label>Chỉ số cũ</label>
+                <input type="number"
+                       [value]="serviceUsages.get(service.id)?.oldReading"
+                       (input)="updateServiceUsage(service.id, 'oldReading', $any($event.target).value)"
+                       class="form-control"
+                       readonly>
+              </div>
+              <div class="form-group">
+                <label>Chỉ số mới</label>
+                <input type="number"
+                       [value]="serviceUsages.get(service.id)?.newReading"
+                       (input)="updateServiceUsage(service.id, 'newReading', +$any($event.target).value)"
+                       class="form-control"
+                       min="0">
+              </div>
+            </div>
+
+            <div *ngIf="service.type === 'FIXED'" class="quantity-input">
+              <label>Số lượng</label>
+              <input type="number"
+                     [value]="serviceUsages.get(service.id)?.quantity"
+                     (input)="updateServiceUsage(service.id, 'quantity', +$any($event.target).value)"
+                     class="form-control"
+                     min="0">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn-submit" [disabled]="state.submitting">
+          {{ state.submitting ? '⏳ Đang lưu...' : '✓ Tạo hóa đơn' }}
+        </button>
+        <button type="button" class="btn-cancel" (click)="cancelForm()" [disabled]="state.submitting">
+          ✕ Hủy bỏ
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="state.loading" class="loading">Đang tải dữ liệu...</div>
+
+  <!-- Empty -->
+  <div *ngIf="!state.loading && invoices.length === 0 && !state.showForm" class="empty">
+    Chưa có hóa đơn nào
+  </div>
+
+  <!-- Danh sách hóa đơn -->
+  <div class="invoice-list" *ngIf="!state.loading && invoices.length > 0 && !state.showForm">
+    <div class="invoice-card" *ngFor="let invoice of invoices">
+      <div class="invoice-header">
+        <div class="invoice-number">
+          <span class="label">Mã HĐ:</span>
+          <span class="value">#{{ invoice.id }}</span>
+        </div>
+        <span class="status-badge" [ngClass]="getStatusClass(invoice.status)">
+          {{ getStatusText(invoice.status) }}
+        </span>
+      </div>
+
+      <div class="invoice-body">
+        <div class="info-row">
+          <span class="icon">👤</span>
+          <span class="label">Khách thuê:</span>
+          <span class="value">{{ invoice.contract.customer.fullname }}</span>
+        </div>
+        <div class="info-row">
+          <span class="icon">🚪</span>
+          <span class="label">Phòng:</span>
+          <span class="value">{{ invoice.contract.room.name }}</span>
+        </div>
+        <div class="info-row">
+          <span class="icon">📅</span>
+          <span class="label">Ngày lập:</span>
+          <span class="value">{{ formatDate(invoice.invoiceDate) }}</span>
+        </div>
+        <div class="info-row">
+          <span class="icon">⏰</span>
+          <span class="label">Hạn thanh toán:</span>
+          <span class="value">{{ formatDate(invoice.dueDate) }}</span>
+        </div>
+        <div class="info-row highlight">
+          <span class="icon">💰</span>
+          <span class="label">Tổng tiền:</span>
+          <span class="value amount">{{ formatCurrency(invoice.totalAmount) }}</span>
+        </div>
+      </div>
+
+      <div class="invoice-actions">
+        <button (click)="viewDetail(invoice)" class="btn-view">
+          👁️ Chi tiết
+        </button>
+        <button *ngIf="invoice.status === 'UNPAID'"
+                (click)="markAsPaid(invoice.id)"
+                class="btn-paid">
+          ✓ Đã thanh toán
+        </button>
+        <button (click)="deleteInvoice(invoice.id)" class="btn-delete">
+          🗑️ Xóa
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal chi tiết -->
+  <div class="detail-modal" *ngIf="state.showDetail && selectedInvoice" (click)="closeDetail()">
+    <div class="detail-content" (click)="$event.stopPropagation()">
+      <div class="detail-header">
+        <h2>Chi tiết hóa đơn #{{ selectedInvoice.id }}</h2>
+        <button class="btn-close" (click)="closeDetail()">×</button>
+      </div>
+
+      <div class="detail-body">
+        <div class="detail-section">
+          <h3>Thông tin chung</h3>
+          <div class="detail-grid">
+            <div class="detail-item">
+              <label>Khách thuê</label>
+              <div class="value">{{ selectedInvoice.contract.customer.fullname }}</div>
+            </div>
+            <div class="detail-item">
+              <label>Phòng</label>
+              <div class="value">{{ selectedInvoice.contract.room.name }}</div>
+            </div>
+            <div class="detail-item">
+              <label>Ngày lập</label>
+              <div class="value">{{ formatDate(selectedInvoice.invoiceDate) }}</div>
+            </div>
+            <div class="detail-item">
+              <label>Hạn thanh toán</label>
+              <div class="value">{{ formatDate(selectedInvoice.dueDate) }}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <h3>Chi tiết thanh toán</h3>
+          <table class="detail-table">
+            <thead>
+            <tr>
+              <th>Dịch vụ</th>
+              <th>Chỉ số cũ</th>
+              <th>Chỉ số mới</th>
+              <th>Số lượng</th>
+              <th>Đơn giá</th>
+              <th>Thành tiền</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+              <td><strong>Tiền phòng</strong></td>
+              <td>-</td>
+              <td>-</td>
+              <td>1</td>
+              <td>{{ formatCurrency(selectedInvoice.roomRent) }}</td>
+              <td><strong>{{ formatCurrency(selectedInvoice.roomRent) }}</strong></td>
+            </tr>
+            <tr *ngFor="let detail of selectedInvoice.serviceDetails">
+              <td>{{ detail.service.name }}</td>
+              <td>{{ detail.oldReading || '-' }}</td>
+              <td>{{ detail.newReading || '-' }}</td>
+              <td>{{ detail.quantity }}</td>
+              <td>{{ formatCurrency(detail.unitPrice) }}</td>
+              <td>{{ formatCurrency(detail.amount) }}</td>
+            </tr>
+            <tr class="total-row">
+              <td colspan="5"><strong>TỔNG CỘNG</strong></td>
+              <td><strong>{{ formatCurrency(selectedInvoice.totalAmount) }}</strong></td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="detail-section" *ngIf="selectedInvoice.note">
+          <h3>Ghi chú</h3>
+          <p class="note-text">{{ selectedInvoice.note }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

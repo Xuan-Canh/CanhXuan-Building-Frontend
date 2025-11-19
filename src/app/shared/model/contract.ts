@@ -23,6 +23,7 @@ export interface Contract {
   depositAmount: number;
   monthlyRent: number;
   paymentDueDate: number;
+  status: string;
   note: string;
   services: Service[];
 }

@@ -1,9 +1,25 @@
-// models/invoice.model.ts
-export interface CreateInvoiceRequest {
+import {Contract} from "./contract";
+import {Service} from "./service";
+
+export interface Invoice {
+  id: number;
+  contract: Contract;
+  invoiceDate: string; // ISO date string
+  dueDate: string;
+  roomRent: number;
+  totalServiceFee: number;
+  totalAmount: number;
+  status: string; // 'UNPAID' | 'PAID' | 'OVERDUE'
+  note?: string;
+  paidAt?: string; // ISO datetime string
+  serviceDetails: InvoiceServiceDetail[];
+}
+
+export interface InvoiceRequest {
   contractId: number;
   invoiceDate: string;
   dueDate: string;
-  serviceDetails: ServiceUsageDetail[];
+  serviceUsageDetails: ServiceUsageDetail[];
   note?: string;
 }
 
@@ -14,35 +30,24 @@ export interface ServiceUsageDetail {
   quantity?: number;
 }
 
+
 export interface InvoiceResponse {
   id: number;
+  contract: Contract;
   invoiceDate: string;
   dueDate: string;
-  status: string;
   roomRent: number;
   totalServiceFee: number;
   totalAmount: number;
-  paidAt?: string;
+  status: string;
   note?: string;
-  customer: CustomerInfo;
-  room: RoomInfo;
-  serviceDetails: ServiceDetailInfo[];
+  paidAt?: string;
+  serviceDetail: InvoiceServiceDetail[];
 }
 
-export interface CustomerInfo {
+export interface InvoiceServiceDetail {
   id: number;
-  fullname: string;
-  phone: string;
-}
-
-export interface RoomInfo {
-  id: number;
-  name: string;
-  floor: number;
-}
-
-export interface ServiceDetailInfo {
-  serviceName: string;
+  service: Service;
   oldReading?: number;
   newReading?: number;
   quantity: number;

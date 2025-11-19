@@ -1,45 +1,39 @@
-// services/invoice.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { CreateInvoiceRequest, InvoiceResponse } from '../../shared/model/invoice';
-import { Contract } from '../../shared/model/contract';
+import { ApiResponse } from '../../shared/model/api-response';
+import { Invoice, InvoiceRequest } from '../../shared/model/invoice';
+import {environment} from "../../shared/model/enviroment";
 
 @Injectable({
   providedIn: 'root'
 })
 export class InvoiceService {
-  private apiUrl = 'http://localhost:8080/canhxuan';
+  private apiUrl = `${environment.apiUrl}/invoices`;
 
   constructor(private http: HttpClient) {}
 
-  // Lấy danh sách hợp đồng active
-  getActiveContracts(): Observable<Contract[]> {
-    return this.http.get<Contract[]>(`${this.apiUrl}/contracts?status=ACTIVE`);
+  getAll(): Observable<ApiResponse<Invoice[]>> {
+    return this.http.get<ApiResponse<Invoice[]>>(this.apiUrl);
   }
 
-  // Lấy chi tiết hợp đồng
-  getContractById(id: number): Observable<Contract> {
-    return this.http.get<Contract>(`${this.apiUrl}/contracts/${id}`);
+  getById(id: number): Observable<ApiResponse<Invoice>> {
+    return this.http.get<ApiResponse<Invoice>>(`${this.apiUrl}/${id}`);
   }
 
-  // Lấy hóa đơn gần nhất của hợp đồng (để lấy chỉ số cũ)
-  getLastInvoice(contractId: number): Observable<InvoiceResponse | null> {
-    return this.http.get<InvoiceResponse | null>(
-      `${this.apiUrl}/invoices/last?contractId=${contractId}`
-    );
+  create(request: InvoiceRequest): Observable<ApiResponse<Invoice>> {
+    return this.http.post<ApiResponse<Invoice>>(this.apiUrl, request);
   }
 
-  // Tạo hóa đơn mới
-  createInvoice(request: CreateInvoiceRequest): Observable<InvoiceResponse> {
-    return this.http.post<InvoiceResponse>(`${this.apiUrl}/invoices`, request);
+  update(id: number, request: InvoiceRequest): Observable<ApiResponse<Invoice>> {
+    return this.http.put<ApiResponse<Invoice>>(`${this.apiUrl}/${id}`, request);
   }
 
-  // Tính toán preview hóa đơn
-  previewInvoice(request: CreateInvoiceRequest): Observable<InvoiceResponse> {
-    return this.http.post<InvoiceResponse>(
-      `${this.apiUrl}/invoices/preview`,
-      request
-    );
+  delete(id: number): Observable<ApiResponse<void>> {
+    return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/${id}`);
+  }
+
+  markAsPaid(id: number): Observable<ApiResponse<Invoice>> {
+    return this.http.patch<ApiResponse<Invoice>>(`${this.apiUrl}/${id}/paid`, {});
   }
 }
