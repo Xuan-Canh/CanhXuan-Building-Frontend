@@ -33,7 +33,9 @@ export class ServiceComponent implements OnInit{
     return {
       name: '',
       description: '',
-      price: 0
+      price: 0,
+      unit: '',
+      type: 'FIXED'
     }
   }
 
@@ -66,6 +68,7 @@ export class ServiceComponent implements OnInit{
     this.state.isEditing= true;
     this.state.showForm= true;
     this.edittingId = service.id;
+    this.serviceDto = service;
   }
 
   resetForm() {
@@ -76,6 +79,7 @@ export class ServiceComponent implements OnInit{
     this.state.isEditing = false;
     this.state.showForm = false;
     this.edittingId = 0;
+    this.resetForm();
   }
 
   onSubmit() {

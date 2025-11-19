@@ -39,6 +39,12 @@
         <td>Ngày {{contract.paymentDueDate}}</td>
         <td>{{contract.note || '-'}}</td>
         <td class="actions">
+          <button class="btn-send" (click)="sendEmail(contract.id)" title="gui email">
+            Gui
+          </button>
+          <button class="btn-export" (click)="export(contract.id)" title="Xuat bao cao">
+            Export
+          </button>
           <button class="btn-edit" (click)="showEditForm(contract.id)" title="Chỉnh sửa">
             ✏️
           </button>

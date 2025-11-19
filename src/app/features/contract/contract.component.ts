@@ -139,6 +139,7 @@ export class ContractComponent implements OnInit {
     });
   }
 
+
   submitContract() {
     if (!this.validateContract()) {
       this.noti.show('Vui lòng điền đầy đủ thông tin bắt buộc', 'error');
@@ -190,6 +191,33 @@ export class ContractComponent implements OnInit {
   isServiceSelected(serviceId: number): boolean {
     return this.selectedServices.includes(serviceId);
   }
+
+  export(id: number) {
+    this.contractService.export(id).subscribe({
+        next: (response: Blob) => {
+            const blob = new Blob([response], { type: 'application/pdf' });
+            const url = window.URL.createObjectURL(blob);
+            window.open(url, '_blank');
+            // Cleanup sau 1 phút
+            setTimeout(() => window.URL.revokeObjectURL(url), 60000);
+        },
+        error: (error) => {
+            console.error('Export failed:', error);
+        }
+    });
+}
+
+  sendEmail(id: number) {
+    this.contractService.sendEmai(id).subscribe({
+        next: () => {
+            this.noti.show('Sent contract by email to customer successfully', 'success');
+        },
+        error: (error) => {
+            console.error('Send contract by email failed:', error);
+        }
+    });
+  }
+
 
   deleteContract(id: number) {
     if (confirm('Bạn có chắc muốn xóa hợp đồng này?')) {

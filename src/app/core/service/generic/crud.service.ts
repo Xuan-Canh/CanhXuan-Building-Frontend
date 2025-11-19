@@ -38,6 +38,13 @@ export class CrudService {
       .pipe(catchError(this.handleError));
   }
 
+  export(objectName: string, objectId: number): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/${objectName}/${objectId}/export`, {
+        responseType: 'blob'
+    })
+    .pipe(catchError(this.handleError));
+  }
+
   private handleError(error: HttpErrorResponse) {
     console.error('Auth error: ', error);
     const message = error.error?.message || 'Có lỗi xảy ra';

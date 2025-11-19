@@ -6,4 +6,6 @@ export interface ServiceDto {
   name: string;
   description: string;
   price: number;
+  type: 'METERED' | 'FIXED';
+  unit: string;
 }
