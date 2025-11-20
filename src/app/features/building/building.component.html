@@ -1,7 +1,7 @@
 <div class="building-page">
   <div class="page-header">
     <h2>Quản lý Chung cư</h2>
-    <button (click)="addBuilding()" class="btn-add" *ngIf="!state.showForm">
+    <button (click)="addBuilding()" class="btn-add" *ngIf="!state.showForm && isAdmin">
       Thêm mới
     </button>
   </div>
@@ -190,10 +190,10 @@
 
       <!-- Actions -->
       <div class="card-actions">
-        <button (click)="editBuilding(b.id)" class="btn-edit">
+        <button *ngIf="isAdmin" (click)="editBuilding(b.id)" class="btn-edit">
           ✏️ Sửa
         </button>
-        <button (click)="deleteBuilding(b.id)" class="btn-delete">
+        <button *ngIf="isAdmin" (click)="deleteBuilding(b.id)" class="btn-delete">
           🗑️ Xóa
         </button>
       </div>

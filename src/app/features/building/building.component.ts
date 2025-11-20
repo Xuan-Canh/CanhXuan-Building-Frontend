@@ -21,6 +21,8 @@ export class BuildingComponent implements OnInit {
   currentPage = 0;
   totalPage = 0;
 
+  isAdmin = false;
+
   state = {
     loading: false,
     showForm: false,
@@ -42,7 +44,10 @@ export class BuildingComponent implements OnInit {
     private buildingService: BuildingService,
     private imageService: BuildingImageService,
     private noti: NotificationService
-  ) {}
+  ) {
+    const currentRole = localStorage.getItem('role');
+    this.isAdmin = currentRole === 'ADMIN';
+  }
 
   ngOnInit() {
     this.loadBuildings(0);

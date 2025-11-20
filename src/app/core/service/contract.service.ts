@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import {CrudService} from "./generic/crud.service";
 import {Contract, ContractDto} from "../../shared/model/contract";
 import {Observable} from "rxjs";
-import {ApiResponse} from "../../shared/model/api-response";
+import {ApiResponse, Page} from "../../shared/model/api-response";
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../shared/model/enviroment';
 
@@ -17,8 +17,8 @@ export class ContractService {
     private http: HttpClient
   ) { }
 
-  getAll() : Observable<ApiResponse<Contract[]>> {
-    return this.crudService.getAll('contracts');
+  getAll(page?: number) : Observable<ApiResponse<Page<Contract>>> {
+    return this.crudService.getAll('contracts', page);
   }
 
   getById(id: number): Observable<ApiResponse<Contract>> {
@@ -41,10 +41,8 @@ export class ContractService {
     return this.crudService.export('contracts',id);
   }
 
-  sendEmai(id: number) : Observable<Blob>{
-    return this.http.post<Blob>(`${this.apiUrl}/contracts/${id}/send-email`, {
-            responseType: 'blob'
-        });
+  sendEmai(id: number) {
+    return this.http.post(`${this.apiUrl}/contracts/${id}/send-email`, {});
   }
 
 }

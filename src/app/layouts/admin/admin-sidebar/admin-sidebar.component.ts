@@ -1,3 +1,4 @@
+// admin-sidebar.component.ts
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
@@ -7,6 +8,7 @@ interface MenuItem {
   label: string;
   route: string;
   icon: string;
+  roleExpect: string[];
 }
 
 @Component({
@@ -18,23 +20,33 @@ interface MenuItem {
 })
 export class AdminSidebarComponent {
   menuItems: MenuItem[] = [
-    { label: 'Dashboard', route: '', icon: '🏢' },
-    { label: 'Tòa nhà', route: '/buildings', icon: '🏢' },
-    { label: 'Phòng', route: '/rooms', icon: '🚪' },
-    { label: 'Khách hàng', route: '/customers', icon: '👥' },
-    { label: 'Hợp đồng', route: '/contracts', icon: '📄' },
-    { label: 'Dịch vụ', route: '/services', icon: '🔧' },
-    { label: 'Hóa đơn', route: '/invoices', icon: '🧾' },
-    // { label: 'Đơn hàng', route: '/orders', icon: '🛒' },
-    { label: 'Người dùng', route: '/users', icon: '👤' }
+    { label: 'Dashboard', route: '', icon: '🏢', roleExpect: ['USER', 'ADMIN'] },
+    { label: 'Tòa nhà', route: '/buildings', icon: '🏢', roleExpect: ['USER', 'ADMIN'] },
+    { label: 'Phòng', route: '/rooms', icon: '🚪', roleExpect: ['USER', 'ADMIN'] },
+    { label: 'Khách hàng', route: '/customers', icon: '👥', roleExpect: ['ADMIN'] },
+    { label: 'Hợp đồng', route: '/contracts', icon: '📄', roleExpect: ['USER', 'ADMIN'] },
+    { label: 'Dịch vụ', route: '/services', icon: '🔧', roleExpect: ['ADMIN'] },
+    { label: 'Hóa đơn', route: '/invoices', icon: '🧾', roleExpect: ['ADMIN'] },
+    { label: 'Người dùng', route: '/users', icon: '👤', roleExpect: ['ADMIN'] }
   ];
 
+  currentRole: string | null = null;
   isCollapsed = false;
 
   constructor(private sidebarService: SidebarService) {
+    this.currentRole = localStorage.getItem('role');
+    
     this.sidebarService.collapsed$.subscribe(collapsed => {
       this.isCollapsed = collapsed;
     });
+  }
+
+  // Kiểm tra xem user có quyền truy cập menu item không
+  hasAccess(item: MenuItem): boolean {
+    if (!this.currentRole) {
+      return false;
+    }
+    return item.roleExpect.includes(this.currentRole);
   }
 
   toggleSidebar() {

@@ -3,7 +3,8 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import {Room, RoomDto, RoomImage} from '../../shared/model/room';
 import {environment} from "../../shared/model/enviroment";
-import {ApiResponse} from "../../shared/model/api-response";
+import {ApiResponse, Page} from "../../shared/model/api-response";
+import { CrudService } from './generic/crud.service';
 
 @Injectable({
   providedIn: 'root'
@@ -11,10 +12,12 @@ import {ApiResponse} from "../../shared/model/api-response";
 export class RoomService {
   private apiUrl = `${environment.apiUrl}/rooms`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient,
+    private crudService: CrudService
+  ) {}
 
-  getAll(): Observable<ApiResponse<Room[]>> {
-    return this.http.get<ApiResponse<Room[]>>(this.apiUrl);
+  getAll(page: number): Observable<ApiResponse<Page<Room>>> {
+    return this.crudService.getAll('rooms', page);
   }
 
   getByName(name: string): Observable<ApiResponse<Room[]>> {

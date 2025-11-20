@@ -8,14 +8,16 @@
   </div>
 
   <nav class="menu-list">
-    <div class="menu-group">
-      <a *ngFor="let item of menuItems"
+  <div class="menu-group">
+    <ng-container *ngFor="let item of menuItems">
+      <a *ngIf="hasAccess(item)"
          [routerLink]="item.route"
          routerLinkActive="active"
          class="menu-link">
         <span class="menu-icon">{{ item.icon }}</span>
         <span class="menu-label">{{ item.label }}</span>
       </a>
-    </div>
-  </nav>
+    </ng-container>
+  </div>
+</nav>
 </aside>

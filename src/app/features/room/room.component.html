@@ -1,7 +1,7 @@
 <div class="room-container">
   <div class="room-header">
     <h2>Quản lý phòng</h2>
-    <button class="btn-add" (click)="showCreateForm()">
+    <button *ngIf="isAdmin" class="btn-add" (click)="showCreateForm()">
       Thêm phòng mới
     </button>
   </div>
@@ -46,16 +46,45 @@
         </td>
         <td>
           <button class="btn btn-info" (click)="viewDetail(room.id)">👁️ Xem</button>
-          <button class="btn btn-warning" (click)="showEditForm(room)">✏️ Sửa</button>
-          <button class="btn btn-danger" (click)="deleteRoom(room.id)">🗑️ Xóa</button>
+          <button *ngIf="isAdmin" class="btn btn-warning" (click)="showEditForm(room)">✏️ Sửa</button>
+          <button *ngIf="isAdmin" class="btn btn-danger" (click)="deleteRoom(room.id)">🗑️ Xóa</button>
           <button class="btn btn-primary" (click)="showImages(room.id)">🖼️ Ảnh</button>
         </td>
       </tr>
       </tbody>
     </table>
   </div>
-</div>
 
+  <!-- pagination -->
+   <br>
+  <div class="pagination" *ngIf="rooms.length > 0 && !showForm && totalPage > 1">
+    <button
+      (click)="previousPage()"
+      [disabled]="currentPage === 0"
+      title="Trang trước">
+      ← Previous
+    </button>
+
+    <button
+      *ngFor="let pageNum of getPageNumbers()"
+      (click)="goToPage(pageNum)"
+      [class.active]="pageNum === currentPage"
+      [title]="'Trang ' + (pageNum + 1)">
+      {{ pageNum + 1 }}
+    </button>
+
+    <span class="page-info" *ngIf="totalPage > 5">
+    {{ currentPage + 1 }} / {{ totalPage }}
+  </span>
+
+    <button
+      (click)="nextPage()"
+      [disabled]="currentPage === totalPage - 1"
+      title="Trang sau">
+      Next →
+    </button>
+  </div>
+</div>
 <div class="modal-overlay" *ngIf="showForm" (click)="cancelForm()">
   <div class="modal-content" (click)="$event.stopPropagation()">
     <h3>{{isEdit ? '✏️ Cập nhật phòng' : '➕ Thêm phòng mới'}}</h3>
@@ -100,7 +129,6 @@
       </div>
     </form>
   </div>
-</div>
 
 <div class="modal-overlay" *ngIf="showImageModal" (click)="closeImageModal()">
   <div class="modal-content image-modal-content" (click)="$event.stopPropagation()">
@@ -119,4 +147,5 @@
       <button class="btn btn-secondary" (click)="closeImageModal()">❌ Đóng</button>
     </div>
   </div>
+</div>
 </div>

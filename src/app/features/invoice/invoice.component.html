@@ -1,6 +1,9 @@
 <div class="invoice-page">
   <div class="page-header">
     <h2>Quản lý Hóa đơn</h2>
+    <button (click)="exportToExcel('invoice-list')" [disabled]="state.loading">
+        {{ state.loading ? 'Đang xuất...' : 'Xuất danh sách khách hàng' }}
+      </button>
     <button (click)="addInvoice()" class="btn-add" *ngIf="!state.showForm">
       Tạo hóa đơn mới
     </button>
@@ -15,7 +18,7 @@
           <label>Hợp đồng <span class="required">*</span></label>
           <select [(ngModel)]="newInvoice.contractId"
                   name="contractId"
-                  (change)="onContractChange()"
+                  (change)="onContractChange(newInvoice.contractId)"
                   class="form-control"
                   required>
             <option value="0">-- Chọn hợp đồng --</option>
@@ -54,42 +57,34 @@
 
       <!-- Service usage -->
       <div class="service-section" *ngIf="newInvoice.contractId > 0">
-        <h4>Thông tin sử dụng dịch vụ</h4>
-        <div class="service-grid">
-          <div class="service-item" *ngFor="let service of services">
-            <h5>{{ service.name }}</h5>
-            <p class="service-price">{{ formatCurrency(service.price) }} / {{ service.unit }}</p>
+  <h4>Thông tin sử dụng dịch vụ</h4>
+  <div class="service-grid">
+    <div class="service-item" *ngFor="let service of contractServices">
+      <h5>{{ service.name }}</h5>
+      <p class="service-price">{{ formatCurrency(service.price) }} / {{ service.unit }}</p>
 
-            <div *ngIf="service.type === 'METERED'" class="meter-inputs">
-              <div class="form-group">
-                <label>Chỉ số cũ</label>
-                <input type="number"
-                       [value]="serviceUsages.get(service.id)?.oldReading"
-                       (input)="updateServiceUsage(service.id, 'oldReading', $any($event.target).value)"
-                       class="form-control"
-                       readonly>
-              </div>
-              <div class="form-group">
-                <label>Chỉ số mới</label>
-                <input type="number"
-                       [value]="serviceUsages.get(service.id)?.newReading"
-                       (input)="updateServiceUsage(service.id, 'newReading', +$any($event.target).value)"
-                       class="form-control"
-                       min="0">
-              </div>
-            </div>
-
-            <div *ngIf="service.type === 'FIXED'" class="quantity-input">
-              <label>Số lượng</label>
-              <input type="number"
-                     [value]="serviceUsages.get(service.id)?.quantity"
-                     (input)="updateServiceUsage(service.id, 'quantity', +$any($event.target).value)"
-                     class="form-control"
-                     min="0">
-            </div>
-          </div>
+      <div *ngIf="service.type === 'METERED'" class="meter-inputs">
+        <div class="form-group">
+          <label>Chỉ số mới</label>
+          <input type="number"
+                 [value]="getServiceUsage(service.id)?.newReading"
+                 (input)="updateServiceUsage(newInvoice.contractId, service.id, 'newReading', +$any($event.target).value)"
+                 class="form-control"
+                 min="0">
         </div>
       </div>
+
+      <div *ngIf="service.type === 'FIXED'" class="quantity-input">
+        <label>Số lượng</label>
+        <input type="number"
+               [value]="getServiceUsage(service.id)?.quantity"
+               (input)="updateServiceUsage(newInvoice.contractId, service.id, 'quantity', +$any($event.target).value)"
+               class="form-control"
+               min="0">
+      </div>
+    </div>
+  </div>
+</div>
 
       <div class="form-actions">
         <button type="submit" class="btn-submit" [disabled]="state.submitting">
@@ -167,6 +162,36 @@
     </div>
   </div>
 
+  <!-- pagination -->
+   <br>
+  <div class="pagination" *ngIf="invoices.length > 0 && !state.showForm">
+    <button
+      (click)="previousPage()"
+      [disabled]="currentPage === 0"
+      title="Trang trước">
+      ← Previous
+    </button>
+
+    <button
+      *ngFor="let pageNum of getPageNumbers()"
+      (click)="goToPage(pageNum)"
+      [class.active]="pageNum === currentPage"
+      [title]="'Trang ' + (pageNum + 1)">
+      {{ pageNum + 1 }}
+    </button>
+
+    <span class="page-info" *ngIf="totalPage > 5">
+    {{ currentPage + 1 }} / {{ totalPage }}
+    </span>
+
+    <button
+      (click)="nextPage()"
+      [disabled]="currentPage === totalPage - 1"
+      title="Trang sau">
+      Next →
+    </button>
+  </div>
+
   <!-- Modal chi tiết -->
   <div class="detail-modal" *ngIf="state.showDetail && selectedInvoice" (click)="closeDetail()">
     <div class="detail-content" (click)="$event.stopPropagation()">
@@ -220,7 +245,7 @@
               <td>{{ formatCurrency(selectedInvoice.roomRent) }}</td>
               <td><strong>{{ formatCurrency(selectedInvoice.roomRent) }}</strong></td>
             </tr>
-            <tr *ngFor="let detail of selectedInvoice.serviceDetails">
+            <tr *ngFor="let detail of selectedInvoice.serviceDetail">
               <td>{{ detail.service.name }}</td>
               <td>{{ detail.oldReading || '-' }}</td>
               <td>{{ detail.newReading || '-' }}</td>

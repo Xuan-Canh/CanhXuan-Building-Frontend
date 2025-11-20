@@ -16,22 +16,22 @@ export const routes: Routes = [
     path: 'login', component: AuthComponent
   },
   {
-    path: 'buildings', component: BuildingComponent, canActivate: [authGuard, roleGuard], data: {roles: 'ADMIN'}
+    path: 'buildings', component: BuildingComponent, canActivate: [authGuard, roleGuard], data: {roles: 'ADMIN, USER'}
   },
   {
-    path: 'rooms', component: RoomComponent
+    path: 'rooms', component: RoomComponent, canActivate: [authGuard, roleGuard], data: {roles: 'ADMIN, USER'}
   },
   {
-    path: 'customers', component: CustomerComponent
+    path: 'customers', component: CustomerComponent, canActivate: [authGuard, roleGuard], data: {roles: 'ADMIN'}
   },
   {
-    path: 'contracts', component: ContractComponent
+    path: 'contracts', component: ContractComponent, canActivate: [authGuard, roleGuard], data: {roles: 'ADMIN, USER'}
   },
   {
-    path: 'services', component: ServiceComponent
+    path: 'services', component: ServiceComponent, canActivate: [authGuard, roleGuard], data: {roles: 'ADMIN'}
   },
   {
-    path: 'invoices', component: InvoiceComponent
+    path: 'invoices', component: InvoiceComponent, canActivate: [authGuard, roleGuard], data: {roles: 'ADMIN'}
   },
   {
     path: 'orders', component: OrderComponent

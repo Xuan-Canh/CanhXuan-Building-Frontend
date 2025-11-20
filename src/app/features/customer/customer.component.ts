@@ -17,6 +17,9 @@ export class CustomerComponent implements OnInit {
   customers: Customer[] = [];
   edittingId = 0;
 
+  currentPage = 0;
+  totalPage = 0;
+
   customerDetails: Customer = {
     id: 0,
     fullname: '',
@@ -45,14 +48,16 @@ export class CustomerComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.loadCustomers();
+    this.loadCustomers(0);
   }
 
-  loadCustomers() {
+  loadCustomers(page: number) {
     this.state.isLoading = true;
-    this.customerService.getAll().subscribe({
+    this.customerService.getAll(page).subscribe({
       next: response => {
-        this.customers = response.data;
+        this.customers = response.data.content;
+        this.totalPage = response.data.totalPages;
+        this.currentPage = response.data.number;
         this.state.isLoading = false;
       },
       error: err => {
@@ -60,6 +65,49 @@ export class CustomerComponent implements OnInit {
         this.state.isLoading = false;
       }
     });
+  }
+
+  // Pagination methods
+  nextPage() {
+    if (this.currentPage + 1 < this.totalPage) {
+      this.loadCustomers(this.currentPage + 1);
+    }
+  }
+
+  previousPage() {
+    if (this.currentPage > 0) {
+      this.loadCustomers(this.currentPage - 1);
+    }
+  }
+
+  goToPage(page: number) {
+    if (page >= 0 && page < this.totalPage) {
+      this.loadCustomers(page);
+    }
+  }
+
+  getPageNumbers(): number[] {
+    const maxPages = 5;
+    const pages: number[] = [];
+
+    if (this.totalPage <= maxPages) {
+      for (let i = 0; i < this.totalPage; i++) {
+        pages.push(i);
+      }
+    } else {
+      let startPage = Math.max(0, this.currentPage - 2);
+      let endPage = Math.min(this.totalPage - 1, startPage + maxPages - 1);
+
+      if (endPage - startPage < maxPages - 1) {
+        startPage = Math.max(0, endPage - maxPages + 1);
+      }
+
+      for (let i = startPage; i <= endPage; i++) {
+        pages.push(i);
+      }
+    }
+
+    return pages;
   }
 
   OnSubmit() {
@@ -70,7 +118,7 @@ export class CustomerComponent implements OnInit {
           this.noti.show("Customer updated successfully", 'success');
           this.state.isSubmitting = false;
           this.cancelForm();
-          this.loadCustomers();
+          this.loadCustomers(this.currentPage);
         }
       })
     }
@@ -80,7 +128,7 @@ export class CustomerComponent implements OnInit {
           this.noti.show("Customer created successfully", 'success');
           this.state.isSubmitting = false;
           this.cancelForm();
-          this.loadCustomers();
+          this.loadCustomers(this.currentPage);
         },
         error: err => {
           this.noti.show("Failed to create customer", 'error');
@@ -105,7 +153,7 @@ export class CustomerComponent implements OnInit {
     this.customerService.delete(customerId).subscribe({
       next: response => {
         this.noti.show("Customer deleted successfully", 'success');
-        this.loadCustomers();
+        this.loadCustomers(this.currentPage);
       },
       error: err => {
         this.noti.show("Failed to delete customer", 'error');

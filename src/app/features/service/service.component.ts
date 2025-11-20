@@ -22,6 +22,9 @@ export class ServiceComponent implements OnInit{
 
   edittingId = 0;
 
+  currentPage = 0;
+  totalPage = 0;
+
   state = {
     showForm : false,
     isEditing : false,
@@ -43,14 +46,16 @@ export class ServiceComponent implements OnInit{
   }
 
   ngOnInit() {
-    this.loadServices();
+    this.loadServices(0);
   }
 
-  loadServices() {
+  loadServices(page: number) {
     this.state.isLoading = true;
-    this.serviceService.getAll().subscribe({
+    this.serviceService.getAll(page).subscribe({
       next: resposne => {
-        this.services = resposne.data;
+        this.services = resposne.data.content;
+        this.currentPage = resposne.data.number;
+        this.totalPage = resposne.data.totalPages;
         this.state.isLoading = false;
       },
       error: err => {
@@ -58,6 +63,49 @@ export class ServiceComponent implements OnInit{
         this.state.isLoading = false;
       }
     });
+  }
+
+  // Pagination methods
+  nextPage() {
+    if (this.currentPage + 1 < this.totalPage) {
+      this.loadServices(this.currentPage + 1);
+    }
+  }
+
+  previousPage() {
+    if (this.currentPage > 0) {
+      this.loadServices(this.currentPage - 1);
+    }
+  }
+
+  goToPage(page: number) {
+    if (page >= 0 && page < this.totalPage) {
+      this.loadServices(page);
+    }
+  }
+
+  getPageNumbers(): number[] {
+    const maxPages = 5;
+    const pages: number[] = [];
+
+    if (this.totalPage <= maxPages) {
+      for (let i = 0; i < this.totalPage; i++) {
+        pages.push(i);
+      }
+    } else {
+      let startPage = Math.max(0, this.currentPage - 2);
+      let endPage = Math.min(this.totalPage - 1, startPage + maxPages - 1);
+
+      if (endPage - startPage < maxPages - 1) {
+        startPage = Math.max(0, endPage - maxPages + 1);
+      }
+
+      for (let i = startPage; i <= endPage; i++) {
+        pages.push(i);
+      }
+    }
+
+    return pages;
   }
 
   showCreateForm() {
@@ -90,7 +138,7 @@ export class ServiceComponent implements OnInit{
           console.log('Service updated successfully');
           this.state.isSubmitting = false;
           this.cancelForm();
-          this.loadServices();
+          this.loadServices(this.currentPage);
         },
         error: err => {
           console.log('Failed to update service', err);
@@ -104,7 +152,7 @@ export class ServiceComponent implements OnInit{
           console.log('Service created successfully');
           this.state.isSubmitting = false;
           this.cancelForm();
-          this.loadServices();
+          this.loadServices(this.currentPage);
         },
         error: err => {
           console.log('Failed to create service', err);
@@ -118,7 +166,7 @@ export class ServiceComponent implements OnInit{
     this.serviceService.delete(serviceId).subscribe({
       next: response => {
         console.log('Service deleted successfully');
-        this.loadServices();
+        this.loadServices(this.currentPage);
       },
       error: err => {
         console.log('Failed to delete service', err);

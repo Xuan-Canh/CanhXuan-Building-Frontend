@@ -23,6 +23,9 @@ export class ContractComponent implements OnInit {
   rooms: Room[] = [];
   availableServices: Service[] = [];
 
+  currentPage = 0;
+  totalPage = 0;
+
   state = {
     showForm: false,
     viewDetails: false,
@@ -32,6 +35,9 @@ export class ContractComponent implements OnInit {
     editingId: 0
   };
 
+  isAdmin = false;
+
+
   newContract: ContractDto = this.initContract();
   selectedServices: number[] = [];
 
@@ -40,12 +46,14 @@ export class ContractComponent implements OnInit {
     private roomService: RoomService,
     private serviceService: ServiceService,
     private noti: NotificationService
-  ) {}
+  ) {
+    const currentRole = localStorage.getItem('role');
+    this.isAdmin = currentRole === 'ADMIN';
+  }
 
   ngOnInit() {
-    this.loadContracts();
+    this.loadContracts(0);
     this.loadRooms();
-    this.loadServices();
   }
 
   initContract(): ContractDto {
@@ -70,11 +78,13 @@ export class ContractComponent implements OnInit {
     };
   }
 
-  loadContracts() {
+  loadContracts(page: number) {
     this.state.isLoading = true;
-    this.contractService.getAll().subscribe({
+    this.contractService.getAll(page).subscribe({
       next: response => {
-        this.contracts = response.data;
+        this.contracts = response.data.content;
+        this.totalPage = response.data.totalPages;
+        this.currentPage = response.data.number;
         this.state.isLoading = false;
       },
       error: err => {
@@ -84,10 +94,54 @@ export class ContractComponent implements OnInit {
     });
   }
 
+  // Pagination methods
+  nextPage() {
+    if (this.currentPage + 1 < this.totalPage) {
+      this.loadContracts(this.currentPage + 1);
+    }
+  }
+
+  previousPage() {
+    if (this.currentPage > 0) {
+      this.loadContracts(this.currentPage - 1);
+    }
+  }
+
+  goToPage(page: number) {
+    if (page >= 0 && page < this.totalPage) {
+      this.loadContracts(page);
+    }
+  }
+
+  getPageNumbers(): number[] {
+    const maxPages = 5;
+    const pages: number[] = [];
+
+    if (this.totalPage <= maxPages) {
+      for (let i = 0; i < this.totalPage; i++) {
+        pages.push(i);
+      }
+    } else {
+      let startPage = Math.max(0, this.currentPage - 2);
+      let endPage = Math.min(this.totalPage - 1, startPage + maxPages - 1);
+
+      if (endPage - startPage < maxPages - 1) {
+        startPage = Math.max(0, endPage - maxPages + 1);
+      }
+
+      for (let i = startPage; i <= endPage; i++) {
+        pages.push(i);
+      }
+    }
+
+    return pages;
+  }
+
+
   loadRooms() {
-    this.roomService.getAll().subscribe({
+    this.roomService.getAll(0).subscribe({
       next: response => {
-        this.rooms = response.data;
+        this.rooms = response.data.content;
       },
       error: err => {
         this.noti.show('Lỗi tải danh sách phòng', 'error');
@@ -96,9 +150,9 @@ export class ContractComponent implements OnInit {
   }
 
   loadServices() {
-    this.serviceService.getAll().subscribe({
+    this.serviceService.getAll(0).subscribe({
       next: response => {
-        this.availableServices = response.data;
+        this.availableServices = response.data.content;
       },
       error: err => {
         this.noti.show('Lỗi tải danh sách dịch vụ', 'error');
@@ -107,6 +161,7 @@ export class ContractComponent implements OnInit {
   }
 
   showCreateForm() {
+    this.loadServices();
     this.state.showForm = true;
     this.state.isEditing = false;
     this.newContract = this.initContract();
@@ -161,7 +216,7 @@ export class ContractComponent implements OnInit {
           this.state.isEditing ? 'Cập nhật thành công' : 'Thêm mới thành công',
           'success'
         );
-        this.loadContracts();
+        this.loadContracts(this.currentPage);
         this.cancelForm();
         this.state.isSubmitting = false;
       },
@@ -224,7 +279,7 @@ export class ContractComponent implements OnInit {
       this.contractService.delete(id).subscribe({
         next: () => {
           this.noti.show('Xóa thành công', 'success');
-          this.loadContracts();
+          this.loadContracts(this.currentPage);
         },
         error: err => {
           this.noti.show('Lỗi khi xóa', 'error');

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import {CrudService} from "./generic/crud.service";
 import {Observable} from "rxjs";
-import {ApiResponse} from "../../shared/model/api-response";
+import {ApiResponse, Page} from "../../shared/model/api-response";
 import {Customer, CustomerDto} from "../../shared/model/customer";
 
 @Injectable({
@@ -11,8 +11,8 @@ export class CustomerService {
 
   constructor(private crudService: CrudService) { }
 
-  getAll(): Observable<ApiResponse<Customer[]>> {
-    return this.crudService.getAll('customers');
+  getAll(page: number): Observable<ApiResponse<Page<Customer>>> {
+    return this.crudService.getAll('customers', page);
   }
 
   getById(id: number) : Observable<ApiResponse<Customer>> {

@@ -45,6 +45,36 @@
     </table>
   </div>
 
+  <!-- pagination -->
+   <br>
+  <div class="pagination" *ngIf="services.length > 0 && !state.showForm && totalPage > 1">
+    <button
+      (click)="previousPage()"
+      [disabled]="currentPage === 0"
+      title="Trang trước">
+      ← Previous
+    </button>
+
+    <button
+      *ngFor="let pageNum of getPageNumbers()"
+      (click)="goToPage(pageNum)"
+      [class.active]="pageNum === currentPage"
+      [title]="'Trang ' + (pageNum + 1)">
+      {{ pageNum + 1 }}
+    </button>
+
+    <span class="page-info" *ngIf="totalPage > 5">
+    {{ currentPage + 1 }} / {{ totalPage }}
+  </span>
+
+    <button
+      (click)="nextPage()"
+      [disabled]="currentPage === totalPage - 1"
+      title="Trang sau">
+      Next →
+    </button>
+  </div>
+
   <!-- Form Create/Edit -->
   <div class="form-container" *ngIf="state.showForm">
     <div class="form-header">

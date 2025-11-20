@@ -2,9 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RoomService } from '../../core/service/room.service';
-import {Room, RoomDto, RoomImage} from '../../shared/model/room';
-import {Building} from "../../shared/model/building";
-import {BuildingService} from "../../core/service/building.service";
+import { Room, RoomDto, RoomImage } from '../../shared/model/room';
+import { Building } from "../../shared/model/building";
+import { BuildingService } from "../../core/service/building.service";
 
 @Component({
   selector: 'app-room',
@@ -26,11 +26,22 @@ export class RoomComponent implements OnInit {
   selectedFile: File | null = null;
   currentRoomId: number | null = null;
 
-  constructor(private roomService: RoomService,
-              private buildingService: BuildingService) {}
+  currentPage = 0;
+  totalPage = 0;
+
+  isAdmin = false;
+
+  constructor(
+    private roomService: RoomService,
+    private buildingService: BuildingService
+  ) {
+    const currentRole = localStorage.getItem('role');
+    this.isAdmin = currentRole === 'ADMIN';
+  }
 
   ngOnInit(): void {
-    this.loadRooms();
+    this.loadRooms(0);
+    this.loadBuildings();
   }
 
   initRoom(): RoomDto {
@@ -44,13 +55,19 @@ export class RoomComponent implements OnInit {
     };
   }
 
-  loadRooms(): void {
-    this.roomService.getAll().subscribe({
+  loadRooms(page: number): void {
+    this.roomService.getAll(page).subscribe({
       next: (response) => {
-        this.rooms = response.data;
-        response.data.forEach(room => {
-          this.buildings.push(room.building);
-        })
+        this.rooms = response.data.content;
+        this.totalPage = response.data.totalPages;
+        this.currentPage = response.data.number;
+        
+        // Debug để kiểm tra pagination
+        console.log('Loaded rooms:', {
+          currentPage: this.currentPage,
+          totalPage: this.totalPage,
+          roomsCount: this.rooms.length
+        });
       },
       error: (error) => {
         console.error('Error loading rooms:', error);
@@ -58,29 +75,83 @@ export class RoomComponent implements OnInit {
     });
   }
 
-  // loadBuildings(): void {
-  //   this.buildingService.getAll().subscribe({
-  //     next: (response) => {
-  //       this.buildings = response.data;
-  //     },
-  //     error: (error) => {
-  //       console.error('Error loading buildings:', error);
-  //     }
-  //   })
-  // }
+  loadBuildings(): void {
+    this.buildingService.getAll(0).subscribe({
+      next: (response) => {
+        // Lấy unique buildings để tránh trùng lặp
+        const buildingMap = new Map<number, Building>();
+        response.data.content.forEach((building: Building) => {
+          if (building.id) {
+            buildingMap.set(building.id, building);
+          }
+        });
+        this.buildings = Array.from(buildingMap.values());
+      },
+      error: (error) => {
+        console.error('Error loading buildings:', error);
+      }
+    });
+  }
 
+  // Pagination methods
+  nextPage() {
+    if (this.currentPage + 1 < this.totalPage) {
+      this.loadRooms(this.currentPage + 1);
+    }
+  }
+
+  previousPage() {
+    if (this.currentPage > 0) {
+      this.loadRooms(this.currentPage - 1);
+    }
+  }
+
+  goToPage(page: number) {
+    if (page >= 0 && page < this.totalPage) {
+      this.loadRooms(page);
+    }
+  }
+
+  getPageNumbers(): number[] {
+    const maxPages = 5;
+    const pages: number[] = [];
+
+    if (this.totalPage <= maxPages) {
+      for (let i = 0; i < this.totalPage; i++) {
+        pages.push(i);
+      }
+    } else {
+      let startPage = Math.max(0, this.currentPage - 2);
+      let endPage = Math.min(this.totalPage - 1, startPage + maxPages - 1);
+
+      if (endPage - startPage < maxPages - 1) {
+        startPage = Math.max(0, endPage - maxPages + 1);
+      }
+
+      for (let i = startPage; i <= endPage; i++) {
+        pages.push(i);
+      }
+    }
+
+    return pages;
+  }
+
+  // Search & Filter
   search(): void {
     if (this.searchName.trim()) {
       this.roomService.getByName(this.searchName).subscribe({
         next: (response) => {
           this.rooms = response.data;
+          // Reset pagination khi search
+          this.totalPage = 1;
+          this.currentPage = 0;
         },
         error: (error) => {
           console.error('Error searching rooms:', error);
         }
       });
     } else {
-      this.loadRooms();
+      this.loadRooms(0);
     }
   }
 
@@ -89,16 +160,20 @@ export class RoomComponent implements OnInit {
       this.roomService.getByBuildingId(Number(this.selectedBuildingId)).subscribe({
         next: (response) => {
           this.rooms = response.data;
+          // Reset pagination khi filter
+          this.totalPage = 1;
+          this.currentPage = 0;
         },
         error: (error) => {
           console.error('Error filtering rooms:', error);
         }
       });
     } else {
-      this.loadRooms();
+      this.loadRooms(0);
     }
   }
 
+  // CRUD operations
   showCreateForm(): void {
     this.selectedRoom = this.initRoom();
     this.isEdit = false;
@@ -111,11 +186,11 @@ export class RoomComponent implements OnInit {
     this.showForm = true;
   }
 
-  saveRoom(roomId?: number): void {
+  saveRoom(roomId? : number): void {
     if (this.isEdit && roomId) {
-      this.roomService.update(roomId, this.selectedRoom).subscribe({
+      this.roomService.update(roomId,  this.selectedRoom).subscribe({
         next: () => {
-          this.loadRooms();
+          this.loadRooms(this.currentPage);
           this.cancelForm();
         },
         error: (error) => {
@@ -124,23 +199,27 @@ export class RoomComponent implements OnInit {
       });
     } else {
       const buildingId = this.selectedRoom.building?.id;
-      this.roomService.create(buildingId, this.selectedRoom).subscribe({
-        next: () => {
-          this.loadRooms();
-          this.cancelForm();
-        },
-        error: (error) => {
-          console.error('Error creating room:', error);
-        }
-      });
+      if (buildingId) {
+        this.roomService.create(buildingId, this.selectedRoom).subscribe({
+          next: () => {
+            this.loadRooms(this.currentPage);
+            this.cancelForm();
+          },
+          error: (error) => {
+            console.error('Error creating room:', error);
+          }
+        });
+      }
     }
   }
 
   deleteRoom(id: number | undefined): void {
+    if (!this.isAdmin) return;
+    
     if (id && confirm('Bạn có chắc muốn xóa phòng này?')) {
       this.roomService.delete(id).subscribe({
         next: () => {
-          this.loadRooms();
+          this.loadRooms(this.currentPage);
         },
         error: (error) => {
           console.error('Error deleting room:', error);
@@ -169,6 +248,7 @@ export class RoomComponent implements OnInit {
     }
   }
 
+  // Image operations
   showImages(roomId?: number | null): void {
     if (roomId) {
       this.currentRoomId = roomId;
@@ -197,7 +277,6 @@ export class RoomComponent implements OnInit {
         next: () => {
           this.showImages(this.currentRoomId);
           this.selectedFile = null;
-          // Reset input file
           const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
           if (fileInput) fileInput.value = '';
         },

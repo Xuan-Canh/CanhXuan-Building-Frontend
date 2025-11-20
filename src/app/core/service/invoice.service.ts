@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { ApiResponse } from '../../shared/model/api-response';
+import { ApiResponse , Page} from '../../shared/model/api-response';
 import { Invoice, InvoiceRequest } from '../../shared/model/invoice';
 import {environment} from "../../shared/model/enviroment";
+import { CrudService } from './generic/crud.service';
 
 @Injectable({
   providedIn: 'root'
@@ -11,10 +12,12 @@ import {environment} from "../../shared/model/enviroment";
 export class InvoiceService {
   private apiUrl = `${environment.apiUrl}/invoices`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient,
+    private crudService: CrudService
+  ) {}
 
-  getAll(): Observable<ApiResponse<Invoice[]>> {
-    return this.http.get<ApiResponse<Invoice[]>>(this.apiUrl);
+  getAll(page: number): Observable<ApiResponse<Page<Invoice>>> {
+    return this.crudService.getAll('invoices', page)
   }
 
   getById(id: number): Observable<ApiResponse<Invoice>> {

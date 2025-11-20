@@ -94,7 +94,6 @@
           <select [(ngModel)]="userDto.role" name="role" required>
             <option value="ADMIN">Admin</option>
             <option value="USER">User</option>
-            <option value="MANAGER">Manager</option>
           </select>
         </div>
       </div>
@@ -106,5 +105,33 @@
         <button type="button" class="btn-cancel" (click)="cancelForm()">Hủy</button>
       </div>
     </form>
+  </div>
+  <!-- pagination -->
+  <div class="pagination" *ngIf="!state.isLoading && users.length > 0 && !state.showForm && totalPage > 1">
+    <button
+      (click)="previousPage()"
+      [disabled]="currentPage === 0"
+      title="Trang trước">
+      ← Previous
+    </button>
+
+    <button
+      *ngFor="let pageNum of getPageNumbers()"
+      (click)="goToPage(pageNum)"
+      [class.active]="pageNum === currentPage"
+      [title]="'Trang ' + (pageNum + 1)">
+      {{ pageNum + 1 }}
+    </button>
+
+    <span class="page-info" *ngIf="totalPage > 5">
+    {{ currentPage + 1 }} / {{ totalPage }}
+  </span>
+
+    <button
+      (click)="nextPage()"
+      [disabled]="currentPage === totalPage - 1"
+      title="Trang sau">
+      Next →
+    </button>
   </div>
 </div>

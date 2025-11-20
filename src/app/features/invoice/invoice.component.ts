@@ -8,6 +8,7 @@ import { ServiceService } from '../../core/service/service.service';
 import { NotificationService } from '../../core/service/notification.service';
 import { Contract } from '../../shared/model/contract';
 import { Service } from '../../shared/model/service';
+import { CrudService } from '../../core/service/generic/crud.service';
 
 @Component({
   selector: 'app-invoice',
@@ -19,8 +20,11 @@ import { Service } from '../../shared/model/service';
 export class InvoiceComponent implements OnInit {
   invoices: Invoice[] = [];
   contracts: Contract[] = [];
-  services: Service[] = [];
+  contractServices: Service[] = [];
   selectedInvoice: Invoice | null = null;
+
+  currentPage = 0;
+  totalPage = 0;
 
   state = {
     loading: false,
@@ -39,26 +43,35 @@ export class InvoiceComponent implements OnInit {
     note: ''
   };
 
-  serviceUsages: Map<number, ServiceUsageDetail> = new Map();
+  serviceUsages: ServiceUsageDetail[] = [];
+  serviceUsage: ServiceUsageDetail = {
+    serviceId: 0,
+  oldReading: 0,
+  newReading: 0,
+  quantity: 0
+  };
 
   constructor(
     private invoiceService: InvoiceService,
     private contractService: ContractService,
     private serviceService: ServiceService,
-    private noti: NotificationService
+    private noti: NotificationService,
+    private crudService: CrudService
   ) {}
 
   ngOnInit() {
-    this.loadInvoices();
-    this.loadServices();
+    this.loadInvoices(0);
+    this.loadContracts();
   }
 
-  loadInvoices() {
+  loadInvoices(page: number) {
     this.state.loading = true;
-    this.invoiceService.getAll().subscribe({
+    this.invoiceService.getAll(page).subscribe({
       next: (response) => {
         if (response.success) {
-          this.invoices = response.data;
+          this.invoices = response.data.content;
+          this.currentPage = response.data.number;
+          this.totalPage = response.data.totalPages;
         }
         this.state.loading = false;
       },
@@ -70,9 +83,9 @@ export class InvoiceComponent implements OnInit {
   }
 
   loadContracts() {
-    this.contractService.getAll().subscribe({
+    this.contractService.getAll(0).subscribe({
       next: (response) => {
-        this.contracts = response.data;
+        this.contracts = response.data.content;
       },
       error: () => {
         this.noti.show('Lỗi tải danh sách hợp đồng', 'error');
@@ -80,19 +93,81 @@ export class InvoiceComponent implements OnInit {
     });
   }
 
-  loadServices() {
-    this.serviceService.getAll().subscribe({
-      next: (response) => {
-        if (response.success) {
-          this.services = response.data;
-          // Khởi tạo service usages sau khi load xong services
-          this.initializeServiceUsages();
-        }
-      },
-      error: () => {
-        this.noti.show('Lỗi tải danh sách dịch vụ', 'error');
+  // Pagination methods
+  nextPage() {
+    if (this.currentPage + 1 < this.totalPage) {
+      this.loadInvoices(this.currentPage + 1);
+    }
+  }
+
+  previousPage() {
+    if (this.currentPage > 0) {
+      this.loadInvoices(this.currentPage - 1);
+    }
+  }
+
+  goToPage(page: number) {
+    if (page >= 0 && page < this.totalPage) {
+      this.loadInvoices(page);
+    }
+  }
+
+  getPageNumbers(): number[] {
+    const maxPages = 5;
+    const pages: number[] = [];
+
+    if (this.totalPage <= maxPages) {
+      for (let i = 0; i < this.totalPage; i++) {
+        pages.push(i);
       }
-    });
+    } else {
+      let startPage = Math.max(0, this.currentPage - 2);
+      let endPage = Math.min(this.totalPage - 1, startPage + maxPages - 1);
+
+      if (endPage - startPage < maxPages - 1) {
+        startPage = Math.max(0, endPage - maxPages + 1);
+      }
+
+      for (let i = startPage; i <= endPage; i++) {
+        pages.push(i);
+      }
+    }
+
+    return pages;
+  }
+
+  // loadServices() {
+  //   this.serviceService.getAll().subscribe({
+  //     next: (response) => {
+  //       if (response.success) {
+  //         this.services = response.data;
+  //         // Khởi tạo service usages sau khi load xong services
+  //         this.initializeServiceUsages();
+  //       }
+  //     },
+  //     error: () => {
+  //       this.noti.show('Lỗi tải danh sách dịch vụ', 'error');
+  //     }
+  //   });
+  // }
+
+  exportToExcel(fileName: string) {
+    this.state.loading = true;
+    return this.crudService.exportToExcel('invoices')
+    .subscribe({
+      next: (blob) => {
+        const timestamp = new Date().toISOString().replace(/[-:]/g, '').split('.')[0];
+        const fileExportedName = `${fileName}_${timestamp}.xlsx`;
+        this.crudService.downloadFile(blob, fileExportedName);
+        this.state.loading = false;
+        this.noti.show('Export invoices to excel successfully', 'success');
+      },
+      error: (err) => {
+        this.state.loading = false;
+        console.error('Export error:', err);
+        this.noti.show('Không thể xuất file. Vui lòng thử lại!', 'error');
+      }
+    })
   }
 
   addInvoice() {
@@ -112,51 +187,49 @@ export class InvoiceComponent implements OnInit {
     this.selectedInvoice = null;
   }
 
-  onContractChange() {
-    // Reset và khởi tạo lại service usages
-    this.initializeServiceUsages();
-
-    // Lấy invoice cuối cùng của contract để lấy chỉ số cũ
-    const contractId = this.newInvoice.contractId;
-    if (contractId > 0) {
-      this.invoiceService.getAll().subscribe({
-        next: (response) => {
-          const lastInvoice = response.data
-            .filter((inv: Invoice) => inv.contract.id === contractId)
-            .sort((a: Invoice, b: Invoice) =>
-              new Date(b.invoiceDate).getTime() - new Date(a.invoiceDate).getTime()
-            )[0];
-
-          if (lastInvoice && lastInvoice.serviceDetails) {
-            lastInvoice.serviceDetails.forEach(detail => {
-              const usage = this.serviceUsages.get(detail.service.id);
-              if (usage && detail.newReading !== undefined) {
-                usage.oldReading = detail.newReading;
-              }
-            });
-          }
-        }
-      });
-    }
+  onContractChange(contractId: number) {
+    this.initializeContractService(contractId);
+    this.initializeServiceUsages(contractId);
   }
 
-  private initializeServiceUsages() {
-    this.serviceUsages.clear();
-    this.services.forEach(service => {
-      this.serviceUsages.set(service.id, {
+  private initializeServiceUsages(contractId: number) {
+    this.serviceUsages = [];
+    this.contractServices.forEach(service => {
+      this.serviceUsage = {
         serviceId: service.id,
-        oldReading: 0,
         newReading: 0,
-        quantity: 1
-      });
+        quantity: service.type === 'FIXED' ? 1 : 0
+      };
+      this.serviceUsages.push(this.serviceUsage);
     });
   }
 
-  updateServiceUsage(serviceId: number, field: keyof ServiceUsageDetail, value: any) {
-    const usage = this.serviceUsages.get(serviceId);
-    if (usage) {
-      (usage as any)[field] = value;
-    }
+  initializeContractService(contractId: number) {
+    this.contractService.getById(contractId)
+    .subscribe({
+      next: (response) => {
+        this.contractServices = response.data.services;
+        this.initializeServiceUsages(contractId); // Gọi sau khi có dữ liệu
+      }
+    })
+  }
+
+  getServiceUsage(serviceId: number) {
+    return this.serviceUsages.find(u => u.serviceId === serviceId);
+  }
+
+  updateServiceUsage(contractId: number, serviceId: number, field: keyof ServiceUsageDetail, value: any) {
+    const index = this.serviceUsages.findIndex(u => u.serviceId === serviceId);
+  
+  if (index !== -1) {
+    // Đã tồn tại - cập nhật
+    this.serviceUsages[index] = {
+      ...this.serviceUsages[index],
+      [field]: value
+    };
+  } else {
+    this.initializeServiceUsages(contractId);
+  }
   }
 
   submitInvoice() {
@@ -165,19 +238,27 @@ export class InvoiceComponent implements OnInit {
       return;
     }
 
-    // Lọc các dịch vụ có sử dụng
-    this.newInvoice.serviceUsageDetails = Array.from(this.serviceUsages.values())
+    // Lọc các dịch vụ có sử dụng - CẢI THIỆN LOGIC
+    this.newInvoice.serviceUsageDetails = this.serviceUsages
       .filter(usage => {
-        const service = this.services.find(s => s.id === usage.serviceId);
-        if (service?.type === 'METERED') {
-          // Dịch vụ đo đếm: phải có newReading > oldReading
-          return usage.newReading !== undefined &&
-            usage.oldReading !== undefined &&
-            usage.newReading > usage.oldReading;
+        const service = this.contractServices.find(s => s.id === usage.serviceId);
+        
+        if (!service) return false;
+        
+        // Với METERED: kiểm tra newReading
+        if (service.type === 'METERED') {
+          return usage.newReading !== undefined && usage.newReading > 0;
         }
-        // Dịch vụ cố định: phải có quantity > 0
-        return usage.quantity !== undefined && usage.quantity > 0;
+        
+        // Với FIXED: kiểm tra quantity
+        if (service.type === 'FIXED') {
+          return usage.quantity !== undefined && usage.quantity > 0;
+        }
+        
+        return false;
       });
+
+    console.log('Dữ liệu gửi đi:', this.newInvoice); // Debug
 
     if (this.newInvoice.serviceUsageDetails.length === 0) {
       this.noti.show('Vui lòng nhập thông tin sử dụng dịch vụ', 'error');
@@ -188,10 +269,11 @@ export class InvoiceComponent implements OnInit {
     this.invoiceService.create(this.newInvoice).subscribe({
       next: () => {
         this.noti.show('Tạo hóa đơn thành công', 'success');
-        this.loadInvoices();
+        this.loadInvoices(this.currentPage);
         this.cancelForm();
       },
       error: (err) => {
+        console.error('Lỗi tạo hóa đơn:', err); // Debug
         this.noti.show(err.error?.message || 'Có lỗi xảy ra', 'error');
         this.state.submitting = false;
       }
@@ -203,7 +285,7 @@ export class InvoiceComponent implements OnInit {
       this.invoiceService.markAsPaid(id).subscribe({
         next: () => {
           this.noti.show('Cập nhật trạng thái thành công', 'success');
-          this.loadInvoices();
+          this.loadInvoices(this.currentPage);
         },
         error: () => {
           this.noti.show('Lỗi cập nhật trạng thái', 'error');
@@ -217,7 +299,7 @@ export class InvoiceComponent implements OnInit {
       this.invoiceService.delete(id).subscribe({
         next: () => {
           this.noti.show('Xóa hóa đơn thành công', 'success');
-          this.loadInvoices();
+          this.loadInvoices(this.currentPage);
         },
         error: () => {
           this.noti.show('Lỗi khi xóa', 'error');
@@ -241,7 +323,7 @@ export class InvoiceComponent implements OnInit {
       serviceUsageDetails: [],
       note: ''
     };
-    this.serviceUsages.clear();
+    this.serviceUsages = [];
   }
 
   getStatusClass(status: string): string {
@@ -284,6 +366,6 @@ export class InvoiceComponent implements OnInit {
   }
 
   getServiceType(serviceId: number): string {
-    return this.services.find(s => s.id === serviceId)?.type || 'FIXED';
+    return this.contractServices.find(s => s.id === serviceId)?.type || 'FIXED';
   }
 }

@@ -45,10 +45,10 @@
           <button class="btn-export" (click)="export(contract.id)" title="Xuat bao cao">
             Export
           </button>
-          <button class="btn-edit" (click)="showEditForm(contract.id)" title="Chỉnh sửa">
+          <button *ngIf="isAdmin" class="btn-edit" (click)="showEditForm(contract.id)" title="Chỉnh sửa">
             ✏️
           </button>
-          <button class="btn-delete" (click)="deleteContract(contract.id)" title="Xóa">
+          <button *ngIf="isAdmin" class="btn-delete" (click)="deleteContract(contract.id)" title="Xóa">
             🗑️
           </button>
         </td>
@@ -56,6 +56,37 @@
       </tbody>
     </table>
   </div>
+
+  <!-- pagination -->
+   <br>
+  <div class="pagination" *ngIf="contracts.length > 0 && !state.showForm">
+    <button
+      (click)="previousPage()"
+      [disabled]="currentPage === 0"
+      title="Trang trước">
+      ← Previous
+    </button>
+
+    <button
+      *ngFor="let pageNum of getPageNumbers()"
+      (click)="goToPage(pageNum)"
+      [class.active]="pageNum === currentPage"
+      [title]="'Trang ' + (pageNum + 1)">
+      {{ pageNum + 1 }}
+    </button>
+
+    <span class="page-info" *ngIf="totalPage > 5">
+    {{ currentPage + 1 }} / {{ totalPage }}
+  </span>
+
+    <button
+      (click)="nextPage()"
+      [disabled]="currentPage === totalPage - 1"
+      title="Trang sau">
+      Next →
+    </button>
+  </div>
+
 
   <div *ngIf="!state.isLoading && contracts.length === 0" class="empty-state">
     Chưa có hợp đồng nào

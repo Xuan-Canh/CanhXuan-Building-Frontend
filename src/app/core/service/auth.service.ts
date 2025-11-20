@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import {HttpClient, HttpErrorResponse} from "@angular/common/http";
 import {BehaviorSubject, catchError, Observable, throwError} from "rxjs";
-import {UserDto} from "../../shared/model/user";
+import {User} from "../../shared/model/user";
 import { ApiResponse } from '../../shared/model/api-response';
 import {LoginResponse} from "../../shared/model/auth";
 
@@ -16,7 +16,7 @@ export class AuthService {
 
   constructor(private http: HttpClient) { }
 
-  register(user: UserDto) {
+  register(user: User) {
     return this.http.post(`${this.authUrl}/register`, user)
       .pipe(catchError(error => this.handleError(error)));
   }

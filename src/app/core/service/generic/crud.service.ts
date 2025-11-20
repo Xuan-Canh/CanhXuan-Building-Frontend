@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import {HttpClient, HttpErrorResponse} from "@angular/common/http";
+import {HttpClient, HttpErrorResponse, HttpHeaders} from "@angular/common/http";
 import {catchError, Observable, throwError} from "rxjs";
 import {ApiResponse} from "../../../shared/model/api-response";
 import {environment} from "../../../shared/model/enviroment";
@@ -43,6 +43,28 @@ export class CrudService {
         responseType: 'blob'
     })
     .pipe(catchError(this.handleError));
+  }
+
+  exportToExcel(objectName: string): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/${objectName}/export`, {
+      responseType: 'blob',
+      headers: new HttpHeaders({
+        'Accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      })
+    }).pipe(catchError(this.handleError));
+  }
+
+  downloadFile(blob: Blob, filename: string): void {
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    
+    // Cleanup
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
   }
 
   private handleError(error: HttpErrorResponse) {

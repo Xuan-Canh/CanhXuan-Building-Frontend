@@ -12,7 +12,7 @@ export interface Invoice {
   status: string; // 'UNPAID' | 'PAID' | 'OVERDUE'
   note?: string;
   paidAt?: string; // ISO datetime string
-  serviceDetails: InvoiceServiceDetail[];
+  serviceDetail: InvoiceServiceDetail[];
 }
 
 export interface InvoiceRequest {
