@@ -10,10 +10,14 @@ import {UserComponent} from "./features/user/user.component";
 import {authGuard} from "./core/guard/auth.guard";
 import {roleGuard} from "./core/guard/role.guard";
 import {InvoiceComponent} from "./features/invoice/invoice.component";
+import {DashboardComponent} from "./features/dashboard/dashboard.component";
 
 export const routes: Routes = [
   {
     path: 'login', component: AuthComponent
+  },
+  {
+    path: 'dashboard', component: DashboardComponent, canActivate: [authGuard, roleGuard], data: {roles: 'ADMIN, USER'}
   },
   {
     path: 'buildings', component: BuildingComponent, canActivate: [authGuard, roleGuard], data: {roles: 'ADMIN, USER'}

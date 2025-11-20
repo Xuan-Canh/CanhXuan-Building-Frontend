@@ -17,7 +17,7 @@ export class InvoiceService {
   ) {}
 
   getAll(page: number): Observable<ApiResponse<Page<Invoice>>> {
-    return this.crudService.getAll('invoices', page)
+    return this.crudService.getAllWithPage('invoices', page)
   }
 
   getById(id: number): Observable<ApiResponse<Invoice>> {

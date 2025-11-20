@@ -83,9 +83,9 @@ export class InvoiceComponent implements OnInit {
   }
 
   loadContracts() {
-    this.contractService.getAll(0).subscribe({
+    this.contractService.getAll().subscribe({
       next: (response) => {
-        this.contracts = response.data.content;
+        this.contracts = response.data;
       },
       error: () => {
         this.noti.show('Lỗi tải danh sách hợp đồng', 'error');
@@ -220,7 +220,7 @@ export class InvoiceComponent implements OnInit {
 
   updateServiceUsage(contractId: number, serviceId: number, field: keyof ServiceUsageDetail, value: any) {
     const index = this.serviceUsages.findIndex(u => u.serviceId === serviceId);
-  
+
   if (index !== -1) {
     // Đã tồn tại - cập nhật
     this.serviceUsages[index] = {
@@ -242,19 +242,19 @@ export class InvoiceComponent implements OnInit {
     this.newInvoice.serviceUsageDetails = this.serviceUsages
       .filter(usage => {
         const service = this.contractServices.find(s => s.id === usage.serviceId);
-        
+
         if (!service) return false;
-        
+
         // Với METERED: kiểm tra newReading
         if (service.type === 'METERED') {
           return usage.newReading !== undefined && usage.newReading > 0;
         }
-        
+
         // Với FIXED: kiểm tra quantity
         if (service.type === 'FIXED') {
           return usage.quantity !== undefined && usage.quantity > 0;
         }
-        
+
         return false;
       });
 

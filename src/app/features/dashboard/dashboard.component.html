@@ -1,0 +1,77 @@
+<div class="dashboard-container">
+  <div class="dashboard-header">
+    <div class="header-content">
+      <div class="header-text">
+        <h1 class="page-title">Dashboard</h1>
+        <p class="page-subtitle">Tổng quan hệ thống quản lý chung cư</p>
+      </div>
+      <button class="refresh-button" (click)="refresh()" [disabled]="isLoading">
+        <span class="refresh-icon">🔄</span>
+        <span>Làm mới</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="dashboard-content" *ngIf="!isLoading; else loading">
+    <div class="stats-grid">
+      <div class="stat-card"
+           *ngFor="let card of statCards"
+           [class]="'stat-card-' + card.color">
+        <div class="stat-icon">{{ card.icon }}</div>
+        <div class="stat-details">
+          <h3 class="stat-title">{{ card.title }}</h3>
+          <div class="stat-value-wrapper">
+            <span class="stat-value" *ngIf="card.title !== 'Doanh thu tháng'">
+              {{ card.value }}
+            </span>
+            <span class="stat-value" *ngIf="card.title === 'Doanh thu tháng'">
+              {{ formatCurrency(card.value) }}
+            </span>
+            <span class="stat-change"
+                  *ngIf="card.change"
+                  [class.increase]="card.changeType === 'increase'"
+                  [class.decrease]="card.changeType === 'decrease'">
+              {{ card.change }}
+            </span>
+          </div>
+        </div>
+        <div class="stat-background">
+          <span class="background-icon">{{ card.icon }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="dashboard-summary">
+      <div class="summary-card">
+        <h2 class="summary-title">📊 Thống kê nhanh</h2>
+        <div class="summary-content">
+          <div class="summary-item">
+            <span class="summary-label">Tỷ lệ lấp đầy:</span>
+            <span class="summary-value primary">
+              {{ dashboardData?.totalRooms ? ((dashboardData.rentedRooms / dashboardData.totalRooms) * 100).toFixed(1) : 0 }}%
+            </span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Trung bình khách/tòa:</span>
+            <span class="summary-value secondary">
+              {{ dashboardData?.totalBuildings ? (dashboardData.totalCustomers / dashboardData.totalBuildings).toFixed(0) : 0 }}
+            </span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Trung bình phòng/tòa:</span>
+            <span class="summary-value info">
+              {{ dashboardData?.totalBuildings ? (dashboardData.totalRooms / dashboardData.totalBuildings).toFixed(0) : 0 }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <ng-template #loading>
+    <div class="loading-container">
+      <div class="loading-spinner"></div>
+      <p class="loading-text">Đang tải dữ liệu...</p>
+    </div>
+  </ng-template>
+</div>

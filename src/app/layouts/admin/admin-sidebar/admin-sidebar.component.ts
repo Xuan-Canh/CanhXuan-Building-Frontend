@@ -20,7 +20,7 @@ interface MenuItem {
 })
 export class AdminSidebarComponent {
   menuItems: MenuItem[] = [
-    { label: 'Dashboard', route: '', icon: '🏢', roleExpect: ['USER', 'ADMIN'] },
+    { label: 'Dashboard', route: '/dashboard', icon: '🏢', roleExpect: ['USER', 'ADMIN'] },
     { label: 'Tòa nhà', route: '/buildings', icon: '🏢', roleExpect: ['USER', 'ADMIN'] },
     { label: 'Phòng', route: '/rooms', icon: '🚪', roleExpect: ['USER', 'ADMIN'] },
     { label: 'Khách hàng', route: '/customers', icon: '👥', roleExpect: ['ADMIN'] },
@@ -35,7 +35,7 @@ export class AdminSidebarComponent {
 
   constructor(private sidebarService: SidebarService) {
     this.currentRole = localStorage.getItem('role');
-    
+
     this.sidebarService.collapsed$.subscribe(collapsed => {
       this.isCollapsed = collapsed;
     });

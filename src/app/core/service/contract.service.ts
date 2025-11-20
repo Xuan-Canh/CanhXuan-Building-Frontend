@@ -17,8 +17,12 @@ export class ContractService {
     private http: HttpClient
   ) { }
 
-  getAll(page?: number) : Observable<ApiResponse<Page<Contract>>> {
-    return this.crudService.getAll('contracts', page);
+  getAll() : Observable<ApiResponse<Contract[]>> {
+    return this.crudService.getAll('contracts');
+  }
+
+  getAllWithPage(page?: number) : Observable<ApiResponse<Page<Contract>>> {
+    return this.crudService.getAllWithPage('contracts', page);
   }
 
   getById(id: number): Observable<ApiResponse<Contract>> {

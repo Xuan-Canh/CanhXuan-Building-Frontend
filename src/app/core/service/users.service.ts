@@ -12,7 +12,7 @@ export class UsersService {
   constructor(private crudService: CrudService) { }
 
   getAll(page: number): Observable<ApiResponse<Page<User>>> {
-    return this.crudService.getAll('users', page);
+    return this.crudService.getAllWithPage('users', page);
   }
 
   create(user: UserDto) : Observable<ApiResponse<User>> {

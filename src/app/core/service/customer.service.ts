@@ -12,7 +12,7 @@ export class CustomerService {
   constructor(private crudService: CrudService) { }
 
   getAll(page: number): Observable<ApiResponse<Page<Customer>>> {
-    return this.crudService.getAll('customers', page);
+    return this.crudService.getAllWithPage('customers', page);
   }
 
   getById(id: number) : Observable<ApiResponse<Customer>> {

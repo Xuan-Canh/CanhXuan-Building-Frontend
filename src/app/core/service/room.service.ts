@@ -17,7 +17,7 @@ export class RoomService {
   ) {}
 
   getAll(page: number): Observable<ApiResponse<Page<Room>>> {
-    return this.crudService.getAll('rooms', page);
+    return this.crudService.getAllWithPage('rooms', page);
   }
 
   getByName(name: string): Observable<ApiResponse<Room[]>> {

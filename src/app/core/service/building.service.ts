@@ -15,7 +15,7 @@ export class BuildingService {
   ) { }
 
   getAll(page: number): Observable<ApiResponse<Page<Building>>> {
-    return this.crudService.getAll('buildings', page);
+    return this.crudService.getAllWithPage('buildings', page);
   }
 
   getById(id: number): Observable<ApiResponse<Building>> {

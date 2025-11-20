@@ -13,7 +13,12 @@ export class CrudService {
 
   constructor(private http: HttpClient) { }
 
-  getAll(objectName: string, page?: number) : Observable<ApiResponse<any>> {
+  getAll(objectName: string) : Observable<ApiResponse<any>> {
+    return this.http.get<ApiResponse<any>>(`${this.apiUrl}/${objectName}/all`)
+      .pipe(catchError(this.handleError));
+  }
+
+  getAllWithPage(objectName: string, page?: number) : Observable<ApiResponse<any>> {
     return this.http.get<ApiResponse<any>>(`${this.apiUrl}/${objectName}?page=${page}`)
       .pipe(catchError(this.handleError));
   }
@@ -61,7 +66,7 @@ export class CrudService {
     link.download = filename;
     document.body.appendChild(link);
     link.click();
-    
+
     // Cleanup
     document.body.removeChild(link);
     window.URL.revokeObjectURL(url);

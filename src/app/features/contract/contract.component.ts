@@ -80,7 +80,7 @@ export class ContractComponent implements OnInit {
 
   loadContracts(page: number) {
     this.state.isLoading = true;
-    this.contractService.getAll(page).subscribe({
+    this.contractService.getAllWithPage(page).subscribe({
       next: response => {
         this.contracts = response.data.content;
         this.totalPage = response.data.totalPages;
