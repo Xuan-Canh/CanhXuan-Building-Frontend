@@ -9,6 +9,7 @@ import { Service } from '../../shared/model/service';
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { NotificationService } from "../../core/service/notification.service";
+import {CrudService} from "../../core/service/generic/crud.service";
 
 @Component({
   selector: 'app-contract',
@@ -26,13 +27,16 @@ export class ContractComponent implements OnInit {
   currentPage = 0;
   totalPage = 0;
 
+  keyword = '';
+
   state = {
     showForm: false,
     viewDetails: false,
     isEditing: false,
     isLoading: false,
     isSubmitting: false,
-    editingId: 0
+    editingId: 0,
+    searchState: false
   };
 
   isAdmin = false;
@@ -45,7 +49,8 @@ export class ContractComponent implements OnInit {
     private contractService: ContractService,
     private roomService: RoomService,
     private serviceService: ServiceService,
-    private noti: NotificationService
+    private noti: NotificationService,
+    private crudService: CrudService
   ) {
     const currentRole = localStorage.getItem('role');
     this.isAdmin = currentRole === 'ADMIN';
@@ -53,7 +58,6 @@ export class ContractComponent implements OnInit {
 
   ngOnInit() {
     this.loadContracts(0);
-    this.loadRooms();
   }
 
   initContract(): ContractDto {
@@ -80,12 +84,16 @@ export class ContractComponent implements OnInit {
 
   loadContracts(page: number) {
     this.state.isLoading = true;
-    this.contractService.getAllWithPage(page).subscribe({
+    if (this.keyword.length > 0) {
+      this.searchContract(this.keyword, page);
+    } else {
+this.contractService.getAllWithPage(page).subscribe({
       next: response => {
         this.contracts = response.data.content;
         this.totalPage = response.data.totalPages;
         this.currentPage = response.data.number;
         this.state.isLoading = false;
+        this.state.searchState = false;
       },
       error: err => {
         this.noti.show('Lỗi tải danh sách hợp đồng', 'error');
@@ -93,23 +101,55 @@ export class ContractComponent implements OnInit {
       }
     });
   }
+}
+
+
+  searchContract(keyword: string, page?: number) {
+    this.state.isLoading = true;
+    this.contractService.searchWithPage(keyword, page)
+      .subscribe({
+        next: (response) => {
+          this.contracts = response.data.content;
+          this.currentPage = response.data.number;
+          this.totalPage = response.data.totalPages;
+          this.state.searchState = true;
+          this.state.isLoading = false;
+        },
+        error: err => {
+          this.noti.show('Loi tim kiem', 'error');
+          this.state.isLoading = false;
+        }
+      });
+  }
 
   // Pagination methods
   nextPage() {
     if (this.currentPage + 1 < this.totalPage) {
+      if (this.keyword.length > 0 && this.state.searchState){
+        this.searchContract(this.keyword, this.currentPage + 1);
+      } else {
       this.loadContracts(this.currentPage + 1);
+      }
     }
   }
 
   previousPage() {
     if (this.currentPage > 0) {
+     if (this.keyword.length > 0 && this.state.searchState){
+        this.searchContract(this.keyword, this.currentPage - 1);
+      } else {
       this.loadContracts(this.currentPage - 1);
+      }
     }
   }
 
   goToPage(page: number) {
     if (page >= 0 && page < this.totalPage) {
-      this.loadContracts(page);
+      if (this.keyword.length > 0 && this.state.searchState) {
+        this.searchContract(this.keyword, page)
+      } else{
+        this.loadContracts(page);
+      }
     }
   }
 
@@ -161,6 +201,7 @@ export class ContractComponent implements OnInit {
   }
 
   showCreateForm() {
+    this.loadRooms()
     this.loadServices();
     this.state.showForm = true;
     this.state.isEditing = false;
@@ -169,6 +210,7 @@ export class ContractComponent implements OnInit {
   }
 
   showEditForm(contractId: number) {
+    this.loadRooms();
     this.contractService.getById(contractId).subscribe({
       next: response => {
         const contract = response.data;
@@ -261,6 +303,25 @@ export class ContractComponent implements OnInit {
         }
     });
 }
+
+  exportToExcel(fileName: string) {
+    this.state.isLoading = true;
+    return this.crudService.exportToExcel('customers')
+      .subscribe({
+        next: (blob) => {
+          const timestamp = new Date().toISOString().replace(/[-:]/g, '').split('.')[0];
+          const fileExportedName = `${fileName}_${timestamp}.xlsx`;
+          this.crudService.downloadFile(blob, fileExportedName);
+          this.state.isLoading = false;
+          this.noti.show('Export customers to excel successfully', 'success');
+        },
+        error: (err) => {
+          this.state.isLoading = false;
+          console.error('Export error:', err);
+          this.noti.show('Không thể xuất file. Vui lòng thử lại!', 'error');
+        }
+      })
+  }
 
   sendEmail(id: number) {
     this.contractService.sendEmai(id).subscribe({

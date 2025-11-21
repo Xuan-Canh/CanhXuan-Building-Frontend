@@ -21,6 +21,8 @@ export class BuildingComponent implements OnInit {
   currentPage = 0;
   totalPage = 0;
 
+  keyword = '';
+
   isAdmin = false;
 
   state = {
@@ -29,7 +31,8 @@ export class BuildingComponent implements OnInit {
     submitting: false,
     editing: false,
     editingId: 0,
-    uploading: false
+    uploading: false,
+    searchState: false
   };
 
   newBuilding: CreateBuildingDto = {
@@ -55,55 +58,87 @@ export class BuildingComponent implements OnInit {
 
   loadBuildings(page: number) {
     this.state.loading = true;
-    this.buildingService.getAll(page).subscribe({
-      next: (response) => {
-        this.buildings = response.data.content;
-        this.currentPage = response.data.number;
-        this.totalPage = response.data.totalPages;
+    if (this.state.searchState && this.keyword.length > 0) {
+      this.searchCustomer(this.keyword, page);
+    } else {
+      this.buildingService.getAll(page).subscribe({
+        next: (response) => {
+          this.buildings = response.data.content;
+          this.currentPage = response.data.number;
+          this.totalPage = response.data.totalPages;
 
-        this.buildings.forEach((building) => {
-          building.mainImage = building.images[0]?.fileName || null;
-          building.imageCount = building.images?.length || 0;
-        });
-        this.state.loading = false;
-      },
-      error: () => {
-        this.noti.show('Lỗi tải danh sách chung cư', 'error');
-        this.state.loading = false;
-      }
-    });
+          this.buildings.forEach((building) => {
+            building.mainImage = building.images[0]?.fileName || null;
+            building.imageCount = building.images?.length || 0;
+          });
+          this.state.loading = false;
+        },
+        error: () => {
+          this.noti.show('Lỗi tải danh sách chung cư', 'error');
+          this.state.loading = false;
+        }
+      });
+    }
   }
 
+  searchCustomer(keyword: string, page?: number) {
+    this.state.loading = true;
+    this.buildingService.searchWithPage(keyword, page)
+      .subscribe({
+        next: (response) => {
+          this.buildings = response.data.content;
+          this.currentPage = response.data.number;
+          this.totalPage = response.data.totalPages;
+          this.state.searchState = true;
+          this.state.loading = false;
+        },
+        error: err => {
+          this.noti.show('Loi tim kiem', 'error');
+          this.state.loading = false;
+        }
+      });
+  }
+
+  // Pagination methods
   nextPage() {
     if (this.currentPage + 1 < this.totalPage) {
-      this.loadBuildings(this.currentPage + 1);
+      if (this.keyword.length > 0 && this.state.searchState){
+        this.searchCustomer(this.keyword, this.currentPage + 1);
+      } else {
+        this.loadBuildings(this.currentPage + 1);
+      }
     }
   }
 
   previousPage() {
     if (this.currentPage > 0) {
-      this.loadBuildings(this.currentPage - 1);
+      if (this.keyword.length > 0 && this.state.searchState){
+        this.searchCustomer(this.keyword, this.currentPage - 1);
+      } else {
+        this.loadBuildings(this.currentPage - 1);
+      }
     }
   }
 
   goToPage(page: number) {
     if (page >= 0 && page < this.totalPage) {
-      this.loadBuildings(page);
+      if (this.keyword.length > 0 && this.state.searchState) {
+        this.searchCustomer(this.keyword, page)
+      } else{
+        this.loadBuildings(page);
+      }
     }
   }
 
-// Helper method để tạo mảng số trang
   getPageNumbers(): number[] {
-    const maxPages = 5; // Hiển thị tối đa 5 nút
+    const maxPages = 5;
     const pages: number[] = [];
 
     if (this.totalPage <= maxPages) {
-      // Hiển thị tất cả nếu ít trang
       for (let i = 0; i < this.totalPage; i++) {
         pages.push(i);
       }
     } else {
-      // Logic hiển thị thông minh
       let startPage = Math.max(0, this.currentPage - 2);
       let endPage = Math.min(this.totalPage - 1, startPage + maxPages - 1);
 
@@ -118,6 +153,7 @@ export class BuildingComponent implements OnInit {
 
     return pages;
   }
+
 
 
   getMainImage(buildingId: number): string | null {

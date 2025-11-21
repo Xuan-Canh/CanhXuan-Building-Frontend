@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
 import {HttpClient, HttpErrorResponse, HttpHeaders} from "@angular/common/http";
 import {catchError, Observable, throwError} from "rxjs";
-import {ApiResponse} from "../../../shared/model/api-response";
+import {ApiResponse, Page} from "../../../shared/model/api-response";
 import {environment} from "../../../shared/model/enviroment";
+import { Contract } from '../../../shared/model/contract';
 
 @Injectable({
   providedIn: 'root'
@@ -21,6 +22,11 @@ export class CrudService {
   getAllWithPage(objectName: string, page?: number) : Observable<ApiResponse<any>> {
     return this.http.get<ApiResponse<any>>(`${this.apiUrl}/${objectName}?page=${page}`)
       .pipe(catchError(this.handleError));
+  }
+
+  searchWithPage(objectName: string, keyword: string, page: number = 0) : Observable<ApiResponse<Page<any>>> {
+    return this.http.get<ApiResponse<Page<any>>>(`${this.apiUrl}/${objectName}/search?keyword=${keyword}&page=${page}`)
+    .pipe(catchError(this.handleError));
   }
 
   getById(objectName: string, id: number) : Observable<ApiResponse<any>> {

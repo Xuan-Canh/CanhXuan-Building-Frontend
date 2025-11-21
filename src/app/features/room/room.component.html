@@ -2,17 +2,22 @@
   <div class="room-header">
     <h2>Quản lý phòng</h2>
     <button *ngIf="isAdmin" class="btn-add" (click)="showCreateForm()">
-      Thêm phòng mới
+      Thêm phòng mới
     </button>
   </div>
 
+  <!-- Search section -->
   <div class="search-section">
-    <input type="text" placeholder="Tìm kiếm phòng..." [(ngModel)]="searchName">
-    <button class="btn btn-primary" (click)="search()">🔍 Tìm kiếm</button>
-    <select [(ngModel)]="selectedBuildingId" (change)="filterByBuilding()">
-      <option value="">Tất cả tòa nhà</option>
-      <option *ngFor="let building of buildings" [value]="building.id">{{building.name}}</option>
-    </select>
+    <div class="search-box">
+      <input
+        type="text"
+        class="search-input"
+        [(ngModel)]="keyword"
+        placeholder="Tìm kiếm theo tên khách hàng hoặc CCCD...">
+      <button (click)="searchRooms(keyword)" class="btn-search" title="Tìm kiếm">
+        🔍 Tìm kiếm
+      </button>
+    </div>
   </div>
 
   <div class="table-container">
@@ -21,6 +26,7 @@
       <tr>
         <th>ID</th>
         <th>Tên phòng</th>
+        <th>Tên chung cư</th>
         <th>Tầng</th>
         <th>Sức chứa</th>
         <th>Giá</th>
@@ -32,23 +38,23 @@
       <tr *ngFor="let room of rooms">
         <td>{{room.id}}</td>
         <td>{{room.name}}</td>
+        <td>{{room.building.name}}</td>
         <td>{{room.floor}}</td>
         <td>{{room.capacity}} người</td>
         <td>{{room.price | number}} VNĐ</td>
         <td>
             <span class="status-badge"
-                  [ngClass]="{'status-available': room.status === 'available',
-                             'status-occupied': room.status === 'occupied',
-                             'status-maintenance': room.status === 'maintenance'}">
-              {{room.status === 'available' ? 'Còn trống' :
-              room.status === 'occupied' ? 'Đã thuê' : 'Bảo trì'}}
+                  [ngClass]="{'status-available': room.status === 'AVAILABLE',
+                             'status-occupied': room.status === 'OCCUPIED',
+                             'status-maintenance': room.status === 'MAINTENANCE'}">
+              {{room.status === 'AVAILABLE' ? 'Còn trống' :
+              room.status === 'OCCUPIED' ? 'Đã thuê' : 'Bảo trì'}}
             </span>
         </td>
         <td>
-          <button class="btn btn-info" (click)="viewDetail(room.id)">👁️ Xem</button>
+          <button class="btn btn-info" (click)="viewRoomDetail(room.id)">📋 Chi tiết</button>
           <button *ngIf="isAdmin" class="btn btn-warning" (click)="showEditForm(room)">✏️ Sửa</button>
           <button *ngIf="isAdmin" class="btn btn-danger" (click)="deleteRoom(room.id)">🗑️ Xóa</button>
-          <button class="btn btn-primary" (click)="showImages(room.id)">🖼️ Ảnh</button>
         </td>
       </tr>
       </tbody>
@@ -56,7 +62,7 @@
   </div>
 
   <!-- pagination -->
-   <br>
+  <br>
   <div class="pagination" *ngIf="rooms.length > 0 && !showForm && totalPage > 1">
     <button
       (click)="previousPage()"
@@ -85,6 +91,8 @@
     </button>
   </div>
 </div>
+
+<!-- Modal Form thêm/sửa phòng -->
 <div class="modal-overlay" *ngIf="showForm" (click)="cancelForm()">
   <div class="modal-content" (click)="$event.stopPropagation()">
     <h3>{{isEdit ? '✏️ Cập nhật phòng' : '➕ Thêm phòng mới'}}</h3>
@@ -129,23 +137,313 @@
       </div>
     </form>
   </div>
+</div>
 
-<div class="modal-overlay" *ngIf="showImageModal" (click)="closeImageModal()">
-  <div class="modal-content image-modal-content" (click)="$event.stopPropagation()">
-    <h3>🖼️ Hình ảnh phòng</h3>
-    <div class="image-upload">
-      <input type="file" (change)="onFileSelected($event)" accept="image/*">
-      <button class="btn btn-primary" (click)="uploadImage()">📤 Tải lên</button>
-    </div>
-    <div class="image-grid">
-      <div class="image-item" *ngFor="let image of roomImages">
-        <img [src]="getImageUrl(image.fileName)" [alt]="image.fileName">
-        <button class="btn-danger" (click)="deleteImage(image.id)">🗑️ Xóa</button>
+<!-- Modal Chi tiết phòng với ảnh -->
+<div class="modal-overlay" *ngIf="showDetailModal" (click)="closeDetailModal()">
+  <div class="modal-content detail-modal-content" (click)="$event.stopPropagation()">
+    <h3>📋 Chi tiết phòng</h3>
+
+    <!-- Thông tin phòng -->
+    <div class="room-detail-info" *ngIf="selectedRoomDetail">
+      <div class="info-grid">
+        <div class="info-item">
+          <strong>Tên phòng:</strong>
+          <span>{{selectedRoomDetail.name}}</span>
+        </div>
+        <div class="info-item">
+          <strong>Tòa nhà:</strong>
+          <span>{{selectedRoomDetail.building?.name}}</span>
+        </div>
+        <div class="info-item">
+          <strong>Tầng:</strong>
+          <span>{{selectedRoomDetail.floor}}</span>
+        </div>
+        <div class="info-item">
+          <strong>Sức chứa:</strong>
+          <span>{{selectedRoomDetail.capacity}} người</span>
+        </div>
+        <div class="info-item">
+          <strong>Giá:</strong>
+          <span>{{selectedRoomDetail.price | number}} VNĐ</span>
+        </div>
+        <div class="info-item">
+          <strong>Trạng thái:</strong>
+          <span class="status-badge"
+                [ngClass]="{'status-available': selectedRoomDetail.status === 'AVAILABLE',
+                           'status-occupied': selectedRoomDetail.status === 'OCCUPIED',
+                           'status-maintenance': selectedRoomDetail.status === 'MAINTENANCE'}">
+            {{selectedRoomDetail.status === 'AVAILABLE' ? 'Còn trống' :
+            selectedRoomDetail.status === 'OCCUPIED' ? 'Đã thuê' : 'Bảo trì'}}
+          </span>
+        </div>
+      </div>
+
+      <div class="description-section" *ngIf="selectedRoomDetail.description">
+        <strong>Mô tả:</strong>
+        <p>{{selectedRoomDetail.description}}</p>
       </div>
     </div>
+
+    <!-- Phần hình ảnh -->
+    <div class="images-section">
+      <h4>🖼️ Hình ảnh phòng</h4>
+
+      <!-- Upload ảnh (chỉ admin) -->
+      <div class="image-upload" *ngIf="isAdmin">
+        <input type="file" #fileInput (change)="onFileSelected($event)" accept="image/*">
+        <button class="btn btn-primary" (click)="uploadImage()">📤 Tải lên</button>
+      </div>
+
+      <!-- Danh sách ảnh -->
+      <div class="image-grid" *ngIf="roomImages && roomImages.length > 0">
+        <div class="image-item" *ngFor="let image of roomImages">
+          <img [src]="getImageUrl(image.fileName)" [alt]="image.fileName">
+          <button *ngIf="isAdmin" class="btn-danger btn-delete-img" (click)="deleteImage(image.id)">🗑️</button>
+        </div>
+      </div>
+
+      <div class="no-images" *ngIf="!roomImages || roomImages.length === 0">
+        <p>Chưa có hình ảnh nào</p>
+      </div>
+    </div>
+
     <div class="form-actions" style="margin-top: 20px;">
-      <button class="btn btn-secondary" (click)="closeImageModal()">❌ Đóng</button>
+      <button class="btn btn-secondary" (click)="closeDetailModal()">❌ Đóng</button>
     </div>
   </div>
 </div>
-</div>
+
+<style>
+  /* Header với actions */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #e0e0e0;
+  }
+
+  .header h2 {
+    margin: 0;
+    color: #333;
+  }
+
+  .header-actions {
+    display: flex;
+    gap: 10px;
+  }
+
+  /* Search section */
+  .search-section {
+    margin-bottom: 20px;
+  }
+
+  .search-box {
+    display: flex;
+    gap: 10px;
+    max-width: 600px;
+  }
+
+  .search-input {
+    flex: 1;
+    padding: 10px 15px;
+    border: 2px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+  }
+
+  .search-input:focus {
+    outline: none;
+    border-color: #4CAF50;
+    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+  }
+
+  .btn-search {
+    padding: 10px 20px;
+    background: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s ease;
+  }
+
+  .btn-search:hover {
+    background: #45a049;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Export button */
+  .btn-export-all {
+    padding: 10px 20px;
+    background: #FF9800;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+  }
+
+  .btn-export-all:hover {
+    background: #F57C00;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  }
+
+  /* Modal chi tiết phòng */
+  .detail-modal-content {
+    max-width: 900px;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  .room-detail-info {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+  }
+
+  .info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 15px;
+    margin-bottom: 15px;
+  }
+
+  .info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .info-item strong {
+    color: #555;
+    font-size: 13px;
+  }
+
+  .info-item span {
+    color: #333;
+    font-size: 15px;
+    font-weight: 500;
+  }
+
+  .description-section {
+    border-top: 1px solid #ddd;
+    padding-top: 15px;
+  }
+
+  .description-section strong {
+    display: block;
+    color: #555;
+    font-size: 13px;
+    margin-bottom: 8px;
+  }
+
+  .description-section p {
+    color: #333;
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  /* Images section */
+  .images-section {
+    margin-top: 20px;
+  }
+
+  .images-section h4 {
+    margin-bottom: 15px;
+    color: #333;
+  }
+
+  .image-upload {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    padding: 15px;
+    background: #f0f0f0;
+    border-radius: 6px;
+  }
+
+  .image-upload input[type="file"] {
+    flex: 1;
+    padding: 8px;
+  }
+
+  .image-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 15px;
+  }
+
+  .image-item {
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    aspect-ratio: 1;
+  }
+
+  .image-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .btn-delete-img {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    padding: 5px 10px;
+    font-size: 12px;
+  }
+
+  .no-images {
+    text-align: center;
+    padding: 40px;
+    color: #999;
+    background: #f8f9fa;
+    border-radius: 8px;
+  }
+
+  @media (max-width: 768px) {
+    .header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 15px;
+    }
+
+    .header-actions {
+      width: 100%;
+      flex-direction: column;
+    }
+
+    .header-actions button {
+      width: 100%;
+    }
+
+    .search-box {
+      max-width: 100%;
+      flex-direction: column;
+    }
+
+    .detail-modal-content {
+      max-width: 95%;
+    }
+
+    .info-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .image-grid {
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    }
+  }
+</style>

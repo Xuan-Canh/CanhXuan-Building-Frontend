@@ -4,6 +4,7 @@ import {NotificationService} from "../../core/service/notification.service";
 import {Customer, CustomerDto} from "../../shared/model/customer";
 import {CommonModule} from "@angular/common";
 import {FormsModule} from "@angular/forms";
+import {CrudService} from "../../core/service/generic/crud.service";
 
 @Component({
   selector: 'app-customer',
@@ -19,6 +20,8 @@ export class CustomerComponent implements OnInit {
 
   currentPage = 0;
   totalPage = 0;
+
+  keyword = '';
 
   customerDetails: Customer = {
     id: 0,
@@ -40,11 +43,13 @@ export class CustomerComponent implements OnInit {
     isEditing: false,
     isSubmitting: false,
     isLoading: true,
-    selectedCustomerId: 0
+    selectedCustomerId: 0,
+    searchState: false
   }
 
   constructor(private customerService: CustomerService,
-              private noti: NotificationService) {
+              private noti: NotificationService,
+              private crudService: CrudService) {
   }
 
   ngOnInit() {
@@ -53,36 +58,70 @@ export class CustomerComponent implements OnInit {
 
   loadCustomers(page: number) {
     this.state.isLoading = true;
-    this.customerService.getAll(page).subscribe({
-      next: response => {
-        this.customers = response.data.content;
-        this.totalPage = response.data.totalPages;
-        this.currentPage = response.data.number;
-        this.state.isLoading = false;
-      },
-      error: err => {
-        this.noti.show("Failed to load customers", 'error');
-        this.state.isLoading = false;
-      }
-    });
+    if (this.state.searchState && this.keyword.length > 0) {
+      this.searchCustomer(this.keyword, page);
+    } else {
+      this.customerService.getAll(page).subscribe({
+        next: response => {
+          this.customers = response.data.content;
+          this.totalPage = response.data.totalPages;
+          this.currentPage = response.data.number;
+          this.state.isLoading = false;
+        },
+        error: err => {
+          this.noti.show("Failed to load customers", 'error');
+          this.state.isLoading = false;
+        }
+      });
+    }
+  }
+
+  searchCustomer(keyword: string, page?: number) {
+    this.state.isLoading = true;
+    this.customerService.searchWithPage(keyword, page)
+      .subscribe({
+        next: (response) => {
+          this.customers = response.data.content;
+          this.currentPage = response.data.number;
+          this.totalPage = response.data.totalPages;
+          this.state.searchState = true;
+          this.state.isLoading = false;
+        },
+        error: err => {
+          this.noti.show('Loi tim kiem', 'error');
+          this.state.isLoading = false;
+        }
+      });
   }
 
   // Pagination methods
   nextPage() {
     if (this.currentPage + 1 < this.totalPage) {
-      this.loadCustomers(this.currentPage + 1);
+      if (this.keyword.length > 0 && this.state.searchState){
+        this.searchCustomer(this.keyword, this.currentPage + 1);
+      } else {
+        this.loadCustomers(this.currentPage + 1);
+      }
     }
   }
 
   previousPage() {
     if (this.currentPage > 0) {
-      this.loadCustomers(this.currentPage - 1);
+      if (this.keyword.length > 0 && this.state.searchState){
+        this.searchCustomer(this.keyword, this.currentPage - 1);
+      } else {
+        this.loadCustomers(this.currentPage - 1);
+      }
     }
   }
 
   goToPage(page: number) {
     if (page >= 0 && page < this.totalPage) {
-      this.loadCustomers(page);
+      if (this.keyword.length > 0 && this.state.searchState) {
+        this.searchCustomer(this.keyword, page)
+      } else{
+        this.loadCustomers(page);
+      }
     }
   }
 
@@ -110,6 +149,7 @@ export class CustomerComponent implements OnInit {
     return pages;
   }
 
+
   OnSubmit() {
     this.state.isSubmitting = true;
     if (this.state.isEditing) {
@@ -136,6 +176,25 @@ export class CustomerComponent implements OnInit {
         }
       });
     }
+  }
+
+  exportToExcel(fileName: string) {
+    this.state.isLoading = true;
+    return this.crudService.exportToExcel('customers')
+      .subscribe({
+        next: (blob) => {
+          const timestamp = new Date().toISOString().replace(/[-:]/g, '').split('.')[0];
+          const fileExportedName = `${fileName}_${timestamp}.xlsx`;
+          this.crudService.downloadFile(blob, fileExportedName);
+          this.state.isLoading = false;
+          this.noti.show('Export customers to excel successfully', 'success');
+        },
+        error: (err) => {
+          this.state.isLoading = false;
+          console.error('Export error:', err);
+          this.noti.show('Không thể xuất file. Vui lòng thử lại!', 'error');
+        }
+      })
   }
 
   showCreateForm() {

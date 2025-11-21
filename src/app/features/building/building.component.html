@@ -6,6 +6,20 @@
     </button>
   </div>
 
+  <!-- Search section -->
+  <div class="search-section">
+    <div class="search-box">
+      <input
+        type="text"
+        class="search-input"
+        [(ngModel)]="keyword"
+        placeholder="Tìm kiếm theo tên khách hàng hoặc CCCD...">
+      <button (click)="searchCustomer(keyword)" class="btn-search" title="Tìm kiếm">
+        🔍 Tìm kiếm
+      </button>
+    </div>
+  </div>
+
   <!-- Form thêm/sửa -->
   <div class="building-form" *ngIf="state.showForm">
     <h3>{{ state.editing ? 'Chỉnh sửa chung cư' : 'Thêm chung cư mới' }}</h3>
@@ -228,3 +242,108 @@
     </button>
   </div>
 </div>
+<style>
+  /* Header với actions */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #e0e0e0;
+  }
+
+  .header h2 {
+    margin: 0;
+    color: #333;
+  }
+
+  .header-actions {
+    display: flex;
+    gap: 10px;
+  }
+
+  /* Search section */
+  .search-section {
+    margin-bottom: 20px;
+  }
+
+  .search-box {
+    display: flex;
+    gap: 10px;
+    max-width: 600px;
+  }
+
+  .search-input {
+    flex: 1;
+    padding: 10px 15px;
+    border: 2px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+  }
+
+  .search-input:focus {
+    outline: none;
+    border-color: #4CAF50;
+    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+  }
+
+  .btn-search {
+    padding: 10px 20px;
+    background: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s ease;
+  }
+
+  .btn-search:hover {
+    background: #45a049;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Export button */
+  .btn-export-all {
+    padding: 10px 20px;
+    background: #FF9800;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+  }
+
+  .btn-export-all:hover {
+    background: #F57C00;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  }
+
+  @media (max-width: 768px) {
+    .header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 15px;
+    }
+
+    .header-actions {
+      width: 100%;
+      flex-direction: column;
+    }
+
+    .header-actions button {
+      width: 100%;
+    }
+
+    .search-box {
+      max-width: 100%;
+      flex-direction: column;
+    }
+  }
+</style>

@@ -25,6 +25,10 @@ export class ContractService {
     return this.crudService.getAllWithPage('contracts', page);
   }
 
+  searchWithPage(keyword: string, page?: number) {
+    return this.crudService.searchWithPage('contracts', keyword, page);
+  }
+
   getById(id: number): Observable<ApiResponse<Contract>> {
     return this.crudService.getById('contracts', id);
   }

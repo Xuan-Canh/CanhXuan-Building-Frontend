@@ -18,6 +18,10 @@ export class BuildingService {
     return this.crudService.getAllWithPage('buildings', page);
   }
 
+  searchWithPage(keyword: string, page: number = 0): Observable<ApiResponse<Page<Building>>> {
+    return this.crudService.searchWithPage('buildings', keyword, page);
+  }
+
   getById(id: number): Observable<ApiResponse<Building>> {
     return this.crudService.getById('buildings', id);
   }

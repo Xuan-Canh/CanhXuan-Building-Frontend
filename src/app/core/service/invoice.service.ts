@@ -37,6 +37,6 @@ export class InvoiceService {
   }
 
   markAsPaid(id: number): Observable<ApiResponse<Invoice>> {
-    return this.http.patch<ApiResponse<Invoice>>(`${this.apiUrl}/${id}/paid`, {});
+    return this.http.patch<ApiResponse<Invoice>>(`${this.apiUrl}/${id}/pay`, {});
   }
 }

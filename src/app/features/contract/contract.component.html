@@ -1,9 +1,28 @@
 <div class="container">
   <div class="header">
     <h2>Quản lý Hợp đồng</h2>
-    <button class="btn-primary" (click)="showCreateForm()">
-      Thêm hợp đồng
-    </button>
+    <div class="header-actions">
+      <button (click)="exportToExcel('contracts-list')" [disabled]="state.isLoading" class="btn-primary">
+        {{ state.isLoading ? 'Đang xuất...' : 'Xuất danh sách hợp đồng' }}
+      </button>
+      <button class="btn-primary" (click)="showCreateForm()">
+        ➕ Thêm hợp đồng
+      </button>
+    </div>
+  </div>
+
+  <!-- Search section -->
+  <div class="search-section">
+    <div class="search-box">
+      <input
+        type="text"
+        class="search-input"
+        [(ngModel)]="keyword"
+        placeholder="Tìm kiếm theo tên khách hàng hoặc CCCD...">
+      <button (click)="searchContract(keyword)" class="btn-search" title="Tìm kiếm">
+        🔍 Tìm kiếm
+      </button>
+    </div>
   </div>
 
   <div *ngIf="state.isLoading" class="loading">
@@ -39,11 +58,11 @@
         <td>Ngày {{contract.paymentDueDate}}</td>
         <td>{{contract.note || '-'}}</td>
         <td class="actions">
-          <button class="btn-send" (click)="sendEmail(contract.id)" title="gui email">
-            Gui
+          <button class="btn-send" (click)="sendEmail(contract.id)" title="Gửi email">
+            📧
           </button>
-          <button class="btn-export" (click)="export(contract.id)" title="Xuat bao cao">
-            Export
+          <button class="btn-export" (click)="export(contract.id)" title="Xuất báo cáo">
+            📄
           </button>
           <button *ngIf="isAdmin" class="btn-edit" (click)="showEditForm(contract.id)" title="Chỉnh sửa">
             ✏️
@@ -58,7 +77,7 @@
   </div>
 
   <!-- pagination -->
-   <br>
+  <br>
   <div class="pagination" *ngIf="contracts.length > 0 && !state.showForm">
     <button
       (click)="previousPage()"
@@ -233,3 +252,109 @@
     </div>
   </div>
 </div>
+
+<style>
+/* Header với actions */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.header h2 {
+  margin: 0;
+  color: #333;
+}
+
+.header-actions {
+  display: flex;
+  gap: 10px;
+}
+
+/* Search section */
+.search-section {
+  margin-bottom: 20px;
+}
+
+.search-box {
+  display: flex;
+  gap: 10px;
+  max-width: 600px;
+}
+
+.search-input {
+  flex: 1;
+  padding: 10px 15px;
+  border: 2px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #4CAF50;
+  box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+}
+
+.btn-search {
+  padding: 10px 20px;
+  background: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.btn-search:hover {
+  background: #45a049;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Export button */
+.btn-export-all {
+  padding: 10px 20px;
+  background: #FF9800;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.btn-export-all:hover {
+  background: #F57C00;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+
+  .header-actions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .header-actions button {
+    width: 100%;
+  }
+
+  .search-box {
+    max-width: 100%;
+    flex-direction: column;
+  }
+}
+</style>

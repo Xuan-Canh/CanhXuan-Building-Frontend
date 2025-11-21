@@ -61,7 +61,6 @@ export class InvoiceComponent implements OnInit {
 
   ngOnInit() {
     this.loadInvoices(0);
-    this.loadContracts();
   }
 
   loadInvoices(page: number) {

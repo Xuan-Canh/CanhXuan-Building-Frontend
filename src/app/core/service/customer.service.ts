@@ -15,6 +15,10 @@ export class CustomerService {
     return this.crudService.getAllWithPage('customers', page);
   }
 
+  searchWithPage(keyword: string, page: number = 0) : Observable<ApiResponse<Page<Customer>>> {
+    return this.crudService.searchWithPage('customers', keyword, page);
+  }
+
   getById(id: number) : Observable<ApiResponse<Customer>> {
     return this.crudService.getById('customers', id);
   }
