@@ -3,4 +3,5 @@ export interface LoginResponse {
   accessToken: string;
   refreshToken: string;
   role: string;
+  userAvatar: string;
 }

@@ -24,7 +24,7 @@
       <ng-container *ngIf="isLogged; else notLogged">
         <div class="user-profile" (click)="toggleUserMenu()">
           <div class="avatar-wrapper">
-            <img [src]="userAvatar" alt="Avatar">
+            <img [src]="getAvatarUrl()" alt="Avatar">
           </div>
           <span class="user-name">{{ userName }}</span>
           <svg class="dropdown-icon" [class.rotated]="showUserMenu" 

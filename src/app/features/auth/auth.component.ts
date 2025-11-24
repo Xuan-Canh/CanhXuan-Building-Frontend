@@ -4,6 +4,7 @@ import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { Router } from "@angular/router";
 import { NotificationService } from "../../core/service/notification.service";
+import { UsersService } from '../../core/service/users.service';
 
 @Component({
   selector: 'app-auth',
@@ -81,6 +82,7 @@ export class AuthComponent {
             localStorage.setItem('refreshToken', response.data.refreshToken);
             localStorage.setItem('username', response.data.username);
             localStorage.setItem('role', response.data.role);
+            localStorage.setItem('userAvatar', response.data.userAvatar);
             this.router.navigate(['/dashboard']);
             this.nofificationService.show(response.message, 'success');
           } else {
@@ -143,12 +145,7 @@ export class AuthComponent {
     this.authService.forgotPassword(this.resetEmail)
       .subscribe({
         next: (response) => {
-          if (response.success) {
-            this.nofificationService.show('Link đặt lại mật khẩu đã được gửi đến email của bạn', 'success');
-            this.switchMode('login');
-          } else {
-            this.nofificationService.show(response.message, 'error');
-          }
+          this.nofificationService.show(response, 'error');
         },
         error: (error) => {
           console.error('Forgot password error: ', error);
@@ -156,6 +153,7 @@ export class AuthComponent {
         }
       });
   }
+
 
   // Toggle password visibility
   togglePasswordVisibility() {

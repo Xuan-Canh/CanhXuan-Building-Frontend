@@ -3,6 +3,7 @@ import {RouterLink, RouterLinkActive} from "@angular/router";
 import {CommonModule} from "@angular/common";
 import {AuthService} from "../../../core/service/auth.service";
 import {NotificationService} from "../../../core/service/notification.service";
+import { UsersService } from '../../../core/service/users.service';
 
 @Component({
   selector: 'app-admin-header',
@@ -14,7 +15,7 @@ import {NotificationService} from "../../../core/service/notification.service";
 export class AdminHeaderComponent implements OnInit{
   isLogged = false;
   userName = '';
-  userAvatar = 'assets/logo.png';
+  userAvatar = '';
   showUserMenu = false;
   
   menuItems = [
@@ -24,7 +25,8 @@ export class AdminHeaderComponent implements OnInit{
   ]
   
   constructor(private authService: AuthService,
-              private notificationService: NotificationService) {
+              private notificationService: NotificationService,
+            private userService: UsersService) {
     console.log('Component loaded');
   }
   
@@ -32,6 +34,7 @@ export class AdminHeaderComponent implements OnInit{
     console.log('admin-header loaded');
     this.authService.loggedIn$.subscribe(value => this.isLogged = value);
     this.userName = localStorage.getItem('username') || '';
+    this.userAvatar = localStorage.getItem('userAvatar') || 'assets/logo.png';
   }
   
   toggleUserMenu() {
@@ -44,6 +47,10 @@ export class AdminHeaderComponent implements OnInit{
     if (!target.closest('.user-profile')) {
       this.showUserMenu = false;
     }
+  }
+
+  getAvatarUrl() {
+    return this.userService.getAvatarUrl(this.userName, this.userAvatar);
   }
   
   logout() {
