@@ -215,8 +215,8 @@ export class BuildingComponent implements OnInit {
         this.loadBuildings(this.currentPage);
         this.cancelForm();
       },
-      error: () => {
-        this.noti.show('Có lỗi xảy ra', 'error');
+      error: (error) => {
+        this.noti.show(error.message , 'error');
         this.state.submitting = false;
       }
     });

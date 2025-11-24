@@ -19,8 +19,8 @@ export class CrudService {
       .pipe(catchError(this.handleError));
   }
 
-  getAllWithPage(objectName: string, page?: number) : Observable<ApiResponse<any>> {
-    return this.http.get<ApiResponse<any>>(`${this.apiUrl}/${objectName}?page=${page}`)
+  getAllWithPage(objectName: string, page?: number, size: number = 10) : Observable<ApiResponse<any>> {
+    return this.http.get<ApiResponse<any>>(`${this.apiUrl}/${objectName}?page=${page}&size=${size}`)
       .pipe(catchError(this.handleError));
   }
 

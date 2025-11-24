@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import {HttpClient, HttpErrorResponse} from "@angular/common/http";
 import {BehaviorSubject, catchError, Observable, throwError} from "rxjs";
-import {User} from "../../shared/model/user";
+import {User, UserDto} from "../../shared/model/user";
 import { ApiResponse } from '../../shared/model/api-response';
 import {LoginResponse} from "../../shared/model/auth";
 
@@ -16,8 +16,8 @@ export class AuthService {
 
   constructor(private http: HttpClient) { }
 
-  register(user: User) {
-    return this.http.post(`${this.authUrl}/register`, user)
+  register(userDto: UserDto): Observable<ApiResponse<any>> {
+    return this.http.post<ApiResponse<any>>(`${this.authUrl}/register`, userDto)
       .pipe(catchError(error => this.handleError(error)));
   }
 
@@ -28,6 +28,11 @@ export class AuthService {
 
   logout() {
     return this.http.post(`${this.authUrl}/logout`, {})
+      .pipe(catchError(error => this.handleError(error)));
+  }
+
+  forgotPassword(email: string) : Observable<ApiResponse<any>>{
+    return this.http.post<ApiResponse<any>>(`${this.authUrl}/forgot-password`, { email })
       .pipe(catchError(error => this.handleError(error)));
   }
 

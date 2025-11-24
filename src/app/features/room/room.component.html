@@ -105,31 +105,31 @@
       </div>
       <div class="form-group">
         <label>Tên phòng *</label>
-        <input type="text" [(ngModel)]="selectedRoom.name" name="name" required placeholder="Nhập tên phòng">
+        <input type="text" [(ngModel)]="selectedRoom.name" name="name" required minlength="1" maxlength="50" placeholder="Nhập tên phòng">
       </div>
       <div class="form-group">
         <label>Tầng *</label>
-        <input type="number" [(ngModel)]="selectedRoom.floor" name="floor" required placeholder="Nhập số tầng">
+        <input type="number" [(ngModel)]="selectedRoom.floor" name="floor" min="1" max="100" required placeholder="Nhập số tầng">
       </div>
       <div class="form-group">
         <label>Sức chứa *</label>
-        <input type="number" [(ngModel)]="selectedRoom.capacity" name="capacity" required placeholder="Số người">
+        <input type="number" [(ngModel)]="selectedRoom.capacity" name="capacity" min="1" max="10" required placeholder="Số người">
       </div>
       <div class="form-group">
         <label>Giá *</label>
-        <input type="number" [(ngModel)]="selectedRoom.price" name="price" required placeholder="Giá thuê">
+        <input type="number" [(ngModel)]="selectedRoom.price" name="price" min="0,001" required placeholder="Giá thuê">
       </div>
       <div class="form-group">
         <label>Trạng thái</label>
         <select [(ngModel)]="selectedRoom.status" name="status">
-          <option value="available">Còn trống</option>
-          <option value="occupied">Đã thuê</option>
-          <option value="maintenance">Bảo trì</option>
+          <option value="AVAILABLE">Còn trống</option>
+          <option value="OCCUPIED">Đã thuê</option>
+          <option value="MAINTENANCE">Bảo trì</option>
         </select>
       </div>
       <div class="form-group">
         <label>Mô tả</label>
-        <textarea [(ngModel)]="selectedRoom.description" name="description" placeholder="Nhập mô tả"></textarea>
+        <textarea [(ngModel)]="selectedRoom.description" name="description" maxlength="500" placeholder="Nhập mô tả"></textarea>
       </div>
       <div class="form-actions">
         <button type="submit" class="btn btn-success">{{isEdit ? '💾 Cập nhật' : '➕ Thêm mới'}}</button>

@@ -109,11 +109,12 @@ export class UserComponent implements OnInit {
     this.editingUserId = user.id;
     this.userDto = {
       username: user.username,
-      password: '', // Không hiển thị password cũ
+      password: '',
       email: user.email,
       phone: user.phone,
       city: user.city,
-      role: user.role
+      role: user.role,
+      avatarUrl: user.avatarUrl
     };
   }
 
@@ -126,7 +127,7 @@ export class UserComponent implements OnInit {
 
   onSubmit() {
     this.state.isSubmitting = true;
-    
+
     if (this.state.isEditing && this.editingUserId) {
       // Cập nhật user
       this.userService.update(this.editingUserId, this.userDto).subscribe({

@@ -1,5 +1,6 @@
 export interface User extends UserDto {
   id: number;
+
 }
 
 export interface UserDto {
@@ -8,5 +9,6 @@ export interface UserDto {
   email: string;
   phone: string;
   city: string;
-  role: string;
+  avatarUrl?: string;
+  role?: string;
 }

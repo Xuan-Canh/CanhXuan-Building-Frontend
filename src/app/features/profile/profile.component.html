@@ -1,0 +1,86 @@
+<div class="profile-container">
+  <div class="profile-card">
+    <div class="profile-header">
+      <div class="header-gradient"></div>
+      <div class="profile-avatar-section">
+        <div class="avatar-wrapper">
+          <img [src]="avatarPreview || getAvatarUrl()" alt="Avatar">
+          <label *ngIf="isEditMode" class="avatar-upload" for="avatar-input">
+            <span class="camera-icon">📷</span>
+            <input type="file" id="avatar-input" accept="image/*" (change)="onAvatarChange($event)">
+          </label>
+        </div>
+
+        <button *ngIf="avatarFile" class="save-avatar-btn" (click)="submitAvatar()">
+          <span class="btn-icon">✓</span>
+          Lưu ảnh đại diện
+        </button>
+
+        <div class="profile-title">
+          <h1>{{ userProfile.username }}</h1>
+          <p class="role-badge">{{ userProfile.role }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="profile-content">
+      <div class="info-grid">
+        <div class="info-card">
+          <div class="info-icon email-icon">✉</div>
+          <div class="info-content">
+            <label>EMAIL</label>
+            <input *ngIf="isEditMode" type="email" [(ngModel)]="editProfile.email"
+                   class="edit-input" placeholder="Nhập email của bạn">
+            <p *ngIf="!isEditMode">{{ userProfile.email }}</p>
+          </div>
+        </div>
+
+        <div class="info-card">
+          <div class="info-icon phone-icon">☎</div>
+          <div class="info-content">
+            <label>SỐ ĐIỆN THOẠI</label>
+            <input *ngIf="isEditMode" type="tel" [(ngModel)]="editProfile.phone"
+                   class="edit-input" placeholder="Nhập số điện thoại">
+            <p *ngIf="!isEditMode">{{ userProfile.phone }}</p>
+          </div>
+        </div>
+
+        <div class="info-card">
+          <div class="info-icon location-icon">📍</div>
+          <div class="info-content">
+            <label>THÀNH PHỐ</label>
+            <input *ngIf="isEditMode" type="text" [(ngModel)]="editProfile.city"
+                   class="edit-input" placeholder="Nhập thành phố">
+            <p *ngIf="!isEditMode">{{ userProfile.city }}</p>
+          </div>
+        </div>
+
+        <div class="info-card">
+          <div class="info-icon role-icon">👤</div>
+          <div class="info-content">
+            <label>VAI TRÒ</label>
+            <p class="role-value">{{ userProfile.role }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="action-buttons">
+        <button *ngIf="!isEditMode" class="btn btn-primary" (click)="toggleEditMode()">
+          <span class="btn-icon">✎</span>
+          Chỉnh sửa thông tin
+        </button>
+
+        <ng-container *ngIf="isEditMode">
+          <button class="btn btn-success" (click)="saveProfile()">
+            <span class="btn-icon">✓</span>
+            Lưu thay đổi
+          </button>
+          <button class="btn btn-secondary" (click)="toggleEditMode()">
+            <span class="btn-icon">✕</span>
+            Hủy
+          </button>
+        </ng-container>
+      </div>
+    </div>
+  </div>
+</div>

@@ -125,13 +125,13 @@
             <div class="form-group">
               <label for="fullname">Họ tên <span class="required">*</span></label>
               <input type="text" id="fullname" [(ngModel)]="newContract.customer.fullname"
-                     name="fullname" required class="form-control">
+                     name="fullname" required minlength="3" maxlength="100" class="form-control">
             </div>
 
             <div class="form-group">
               <label for="cccd">CCCD <span class="required">*</span></label>
               <input type="text" id="cccd" [(ngModel)]="newContract.customer.cccd"
-                     name="cccd" required class="form-control">
+                     name="cccd" required pattern="[0-9]{9,12}" class="form-control">
             </div>
           </div>
 
@@ -139,7 +139,7 @@
             <div class="form-group">
               <label for="phone">Số điện thoại</label>
               <input type="text" id="phone" [(ngModel)]="newContract.customer.phone"
-                     name="phone" class="form-control">
+                     name="phone" pattern="[0-9]{10,11}" class="form-control">
             </div>
 
             <div class="form-group">
@@ -202,13 +202,13 @@
             <div class="form-group">
               <label for="monthlyRent">Giá thuê hàng tháng <span class="required">*</span></label>
               <input type="number" id="monthlyRent" [(ngModel)]="newContract.monthlyRent"
-                     name="monthlyRent" required class="form-control">
+                     name="monthlyRent" min="0.01" required class="form-control">
             </div>
 
             <div class="form-group">
               <label for="depositAmount">Tiền cọc <span class="required">*</span></label>
               <input type="number" id="depositAmount" [(ngModel)]="newContract.depositAmount"
-                     name="depositAmount" required class="form-control">
+                     name="depositAmount" min="0.01" required class="form-control">
             </div>
           </div>
 

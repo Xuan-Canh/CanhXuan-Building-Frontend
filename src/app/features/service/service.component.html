@@ -83,25 +83,25 @@
     <form class="service-form" (ngSubmit)="onSubmit()">
       <div class="form-group">
         <label>Tên dịch vụ *</label>
-        <input type="text" [(ngModel)]="serviceDto.name" name="name"
+        <input type="text" [(ngModel)]="serviceDto.name" name="name" minlength="3" maxlength="100"
                placeholder="Nhập tên dịch vụ" required />
       </div>
 
       <div class="form-group">
         <label>Phí dịch vụ (VNĐ) *</label>
-        <input type="number" [(ngModel)]="serviceDto.price" name="price"
+        <input type="number" [(ngModel)]="serviceDto.price" name="price" min="0.01"
                placeholder="Nhập phí dịch vụ" required />
       </div>
 
       <div class="form-group full-width">
         <label>Mô tả</label>
-        <textarea [(ngModel)]="serviceDto.description" name="description"
+        <textarea [(ngModel)]="serviceDto.description" name="description" maxlength="500"
                   placeholder="Nhập mô tả dịch vụ" rows="4"></textarea>
       </div>
 
       <div class="form-group full-width">
         <label>Don vi</label>
-        <textarea [(ngModel)]="serviceDto.unit" name="unit"
+        <textarea [(ngModel)]="serviceDto.unit" name="unit" required maxlength="20"
                   placeholder="Nhap don vi tinh" rows="4"></textarea>
       </div>
 

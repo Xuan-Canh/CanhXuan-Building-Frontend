@@ -179,7 +179,7 @@ this.contractService.getAllWithPage(page).subscribe({
 
 
   loadRooms() {
-    this.roomService.getAll(0).subscribe({
+    this.roomService.getAll(0, 200).subscribe({
       next: response => {
         this.rooms = response.data.content;
       },

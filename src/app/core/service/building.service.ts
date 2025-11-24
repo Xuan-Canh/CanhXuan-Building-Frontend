@@ -14,8 +14,8 @@ export class BuildingService {
     private crudService: CrudService
   ) { }
 
-  getAll(page: number): Observable<ApiResponse<Page<Building>>> {
-    return this.crudService.getAllWithPage('buildings', page);
+  getAll(page: number, size: number = 9): Observable<ApiResponse<Page<Building>>> {
+    return this.crudService.getAllWithPage('buildings', page, size);
   }
 
   searchWithPage(keyword: string, page: number = 0): Observable<ApiResponse<Page<Building>>> {

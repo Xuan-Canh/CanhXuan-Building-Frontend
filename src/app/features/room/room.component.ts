@@ -48,7 +48,7 @@ export class RoomComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadRooms(0);
-    this.loadBuildings(0); // Load danh sách tòa nhà
+    this.loadBuildings(0,100);
   }
 
   initRoom(): RoomDto {
@@ -62,8 +62,8 @@ export class RoomComponent implements OnInit {
     };
   }
 
-  loadBuildings(page: number): void {
-    this.buildingService.getAll(page).subscribe({
+  loadBuildings(page: number, size?: number): void {
+    this.buildingService.getAll(page, size).subscribe({
       next: (response) => {
         this.buildings = response.data.content;
       },

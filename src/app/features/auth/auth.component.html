@@ -10,7 +10,26 @@
       </div>
     </div>
 
-    <form class="auth-form" (ngSubmit)="onSubmit()" #loginForm="ngForm">
+    <!-- Mode Tabs -->
+    <div class="auth-tabs">
+      <button
+        class="tab-btn"
+        [class.active]="currentMode === 'login'"
+        (click)="switchMode('login')"
+        type="button">
+        Đăng nhập
+      </button>
+      <button
+        class="tab-btn"
+        [class.active]="currentMode === 'register'"
+        (click)="switchMode('register')"
+        type="button">
+        Đăng ký
+      </button>
+    </div>
+
+    <!-- LOGIN FORM -->
+    <form class="auth-form" *ngIf="currentMode === 'login'" (ngSubmit)="onSubmit()" #loginForm="ngForm">
       <div class="form-group">
         <label for="username">
           <span class="label-icon">👤</span>
@@ -34,9 +53,9 @@
           <span class="label-icon">🔒</span>
           Mật khẩu
         </label>
-        <div class="input-wrapper">
+        <div class="input-wrapper password-wrapper">
           <input
-            type="password"
+            [type]="showPassword ? 'text' : 'password'"
             id="password"
             class="form-control"
             placeholder="Nhập mật khẩu"
@@ -44,12 +63,22 @@
             [(ngModel)]="password"
             name="password"
           />
+          <button
+            type="button"
+            class="toggle-password"
+            (click)="togglePasswordVisibility()">
+            {{ showPassword ? '👁️' : '👁️‍🗨️' }}
+          </button>
         </div>
+      </div>
+
+      <div class="forgot-link">
+        <a (click)="switchMode('forgot-password')">Quên mật khẩu?</a>
       </div>
 
       <button
         type="submit"
-        class="btn-login"
+        class="btn-submit"
         [disabled]="!loginForm.form.valid"
       >
         <span *ngIf="loginForm.form.valid">🚀 Đăng nhập</span>
@@ -57,9 +86,181 @@
       </button>
     </form>
 
+    <!-- REGISTER FORM -->
+    <form class="auth-form" *ngIf="currentMode === 'register'" (ngSubmit)="onSubmit()" #registerForm="ngForm">
+      <div class="form-group">
+        <label for="reg-city">
+          <span class="label-icon">👤</span>
+          Địa chỉ thành phố
+        </label>
+        <div class="input-wrapper">
+          <input
+            type="text"
+            id="reg-city"
+            class="form-control"
+            placeholder="Nhập địa chỉ thành phố"
+            required
+            [(ngModel)]="city"
+            name="fullName"
+          />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="reg-username">
+          <span class="label-icon">🔑</span>
+          Tên đăng nhập
+        </label>
+        <div class="input-wrapper">
+          <input
+            type="text"
+            id="reg-username"
+            class="form-control"
+            placeholder="Nhập tên đăng nhập"
+            required
+            [(ngModel)]="username"
+            name="username"
+          />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="reg-email">
+          <span class="label-icon">📧</span>
+          Email
+        </label>
+        <div class="input-wrapper">
+          <input
+            type="email"
+            id="reg-email"
+            class="form-control"
+            placeholder="Nhập email"
+            required
+            email
+            [(ngModel)]="email"
+            name="email"
+          />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="reg-phone">
+          <span class="label-icon">📱</span>
+          Số điện thoại
+        </label>
+        <div class="input-wrapper">
+          <input
+            type="tel"
+            id="reg-phone"
+            class="form-control"
+            placeholder="Nhập số điện thoại"
+            required
+            [(ngModel)]="phone"
+            name="phone"
+          />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="reg-password">
+          <span class="label-icon">🔒</span>
+          Mật khẩu
+        </label>
+        <div class="input-wrapper password-wrapper">
+          <input
+            [type]="showPassword ? 'text' : 'password'"
+            id="reg-password"
+            class="form-control"
+            placeholder="Nhập mật khẩu (tối thiểu 6 ký tự)"
+            required
+            minlength="6"
+            [(ngModel)]="password"
+            name="password"
+          />
+          <button
+            type="button"
+            class="toggle-password"
+            (click)="togglePasswordVisibility()">
+            {{ showPassword ? '👁️' : '👁️‍🗨️' }}
+          </button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="reg-confirm-password">
+          <span class="label-icon">🔐</span>
+          Xác nhận mật khẩu
+        </label>
+        <div class="input-wrapper password-wrapper">
+          <input
+            [type]="showConfirmPassword ? 'text' : 'password'"
+            id="reg-confirm-password"
+            class="form-control"
+            placeholder="Nhập lại mật khẩu"
+            required
+            [(ngModel)]="confirmPassword"
+            name="confirmPassword"
+          />
+          <button
+            type="button"
+            class="toggle-password"
+            (click)="toggleConfirmPasswordVisibility()">
+            {{ showConfirmPassword ? '👁️' : '👁️‍🗨️' }}
+          </button>
+        </div>
+      </div>
+
+      <button
+        type="submit"
+        class="btn-submit"
+        [disabled]="!registerForm.form.valid"
+      >
+        <span *ngIf="registerForm.form.valid">✨ Đăng ký tài khoản</span>
+        <span *ngIf="!registerForm.form.valid">⏳ Vui lòng điền đầy đủ thông tin</span>
+      </button>
+    </form>
+
+    <!-- FORGOT PASSWORD FORM -->
+    <form class="auth-form" *ngIf="currentMode === 'forgot-password'" (ngSubmit)="onSubmit()" #forgotForm="ngForm">
+      <div class="forgot-password-info">
+        <p>Nhập địa chỉ email của bạn và chúng tôi sẽ gửi link đặt lại mật khẩu.</p>
+      </div>
+
+      <div class="form-group">
+        <label for="reset-email">
+          <span class="label-icon">📧</span>
+          Email
+        </label>
+        <div class="input-wrapper">
+          <input
+            type="email"
+            id="reset-email"
+            class="form-control"
+            placeholder="Nhập email của bạn"
+            required
+            email
+            [(ngModel)]="resetEmail"
+            name="resetEmail"
+          />
+        </div>
+      </div>
+
+      <button
+        type="submit"
+        class="btn-submit"
+        [disabled]="!forgotForm.form.valid"
+      >
+        <span *ngIf="forgotForm.form.valid">📨 Gửi link đặt lại mật khẩu</span>
+        <span *ngIf="!forgotForm.form.valid">⏳ Vui lòng nhập email</span>
+      </button>
+
+      <div class="back-to-login">
+        <a (click)="switchMode('login')">← Quay lại đăng nhập</a>
+      </div>
+    </form>
+
     <div class="auth-footer">
       <p>© 2025 CX Apartment Management System</p>
-      <a href="#">Quên mật khẩu?</a>
     </div>
   </div>
 </div>

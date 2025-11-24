@@ -11,8 +11,8 @@ export class CustomerService {
 
   constructor(private crudService: CrudService) { }
 
-  getAll(page: number): Observable<ApiResponse<Page<Customer>>> {
-    return this.crudService.getAllWithPage('customers', page);
+  getAll(page: number, size: number = 10): Observable<ApiResponse<Page<Customer>>> {
+    return this.crudService.getAllWithPage('customers', page, size);
   }
 
   searchWithPage(keyword: string, page: number = 0) : Observable<ApiResponse<Page<Customer>>> {
