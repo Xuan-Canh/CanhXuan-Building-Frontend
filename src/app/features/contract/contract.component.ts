@@ -10,6 +10,8 @@ import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { NotificationService } from "../../core/service/notification.service";
 import {CrudService} from "../../core/service/generic/crud.service";
+import {CustomerService} from "../../core/service/customer.service";
+import {error} from "@angular/compiler-cli/src/transformers/util";
 
 @Component({
   selector: 'app-contract',
@@ -23,11 +25,15 @@ export class ContractComponent implements OnInit {
   contracts: Contract[] = [];
   rooms: Room[] = [];
   availableServices: Service[] = [];
+  availableCustomers: Customer[] = [];
+
+  showFormCustomer = false;
 
   currentPage = 0;
   totalPage = 0;
 
   keyword = '';
+  customerKeyword = '';
 
   state = {
     showForm: false,
@@ -46,6 +52,7 @@ export class ContractComponent implements OnInit {
   selectedServices: number[] = [];
 
   constructor(
+    private customerService: CustomerService,
     private contractService: ContractService,
     private roomService: RoomService,
     private serviceService: ServiceService,
@@ -200,6 +207,19 @@ this.contractService.getAllWithPage(page).subscribe({
     });
   }
 
+  searchCustomers() {
+    console.log(this.customerKeyword);
+    if (this.customerKeyword.length == 0) {
+      this.noti.show('Vui lòng nhập từ khoá tìm kiếm', 'info');
+      return;
+    }
+    this.customerService.searchWithPage(this.customerKeyword).subscribe({
+      next: (response) => {
+        this.availableCustomers = response.data.content;
+      }
+    });
+  }
+
   showCreateForm() {
     this.loadRooms();
     this.loadServices();
@@ -216,6 +236,7 @@ this.contractService.getAllWithPage(page).subscribe({
       next: response => {
         const contract = response.data;
         this.state.isEditing = true;
+        this.showFormCustomer = true;
         this.state.showForm = true;
         this.state.editingId = contract.id;
         this.newContract = {
@@ -254,14 +275,25 @@ this.contractService.getAllWithPage(page).subscribe({
       : this.contractService.create(this.newContract);
 
     request.subscribe({
-      next: () => {
-        this.noti.show(
-          this.state.isEditing ? 'Cập nhật thành công' : 'Thêm mới thành công',
-          'success'
-        );
-        this.loadContracts(this.currentPage);
-        this.cancelForm();
-        this.state.isSubmitting = false;
+      next: (response) => {
+        if (response.success) {
+          this.noti.show(response.message, 'success');
+          this.loadContracts(this.currentPage);
+          this.cancelForm();
+          this.state.isSubmitting = false;
+          this.showFormCustomer = false;
+          this.newContract = this.initContract();
+          this.customerKeyword = '';
+          this.availableCustomers = [];
+        }
+        else {
+          if (response.errors && response.errors.length > 0) {
+            response.errors.forEach(error => this.noti.show(error, 'error'));
+          } else {
+            this.noti.show(response.message, 'error');
+          }
+          this.state.isSubmitting = false;
+        }
       },
       error: err => {
         this.noti.show('Có lỗi xảy ra: ' + (err.error?.message || 'Unknown error'), 'error');
@@ -299,6 +331,11 @@ this.contractService.getAllWithPage(page).subscribe({
     this.newContract.depositAmount = selectedRoom.price;
   }
 }
+
+  onCustomerSelect(customer: Customer) {
+    this.newContract.customer = customer;
+    this.showFormCustomer = true;
+  }
 
   export(id: number) {
     this.contractService.export(id).subscribe({
@@ -362,6 +399,7 @@ this.contractService.getAllWithPage(page).subscribe({
 
   cancelForm() {
     this.state.showForm = false;
+    this.showFormCustomer = false;
     this.resetForm();
   }
 

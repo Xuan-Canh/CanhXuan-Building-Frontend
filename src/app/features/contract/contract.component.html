@@ -6,7 +6,7 @@
         {{ state.isLoading ? 'Đang xuất...' : 'Xuất danh sách hợp đồng' }}
       </button>
       <button class="btn-primary" (click)="showCreateForm()">
-        ➕ Thêm hợp đồng
+        Thêm hợp đồng
       </button>
     </div>
   </div>
@@ -106,7 +106,6 @@
     </button>
   </div>
 
-
   <div *ngIf="!state.isLoading && contracts.length === 0" class="empty-state">
     Chưa có hợp đồng nào
   </div>
@@ -117,9 +116,36 @@
         <h3>{{state.isEditing ? "Chỉnh sửa hợp đồng" : "Thêm mới hợp đồng"}}</h3>
         <button class="btn-close" (click)="cancelForm()">&times;</button>
       </div>
-
       <form class="form" (ngSubmit)="submitContract()">
-        <div class="form-section">
+        <div *ngIf="!state.isEditing">
+          <div class="add-customer-checkbox">
+            <input type="checkbox" [(ngModel)]="showFormCustomer" name="isAddNewCustomer" id="addNewCustomerCheckbox">
+            <label for="addNewCustomerCheckbox">Thêm khách hàng mới</label>
+          </div>
+
+          <div *ngIf="!showFormCustomer" class="form-section">
+            <h4>Chọn khách hàng</h4>
+            <div class="customer-search-section">
+              <div class="customer-search-box">
+                <input type="text" [(ngModel)]="customerKeyword" name="customerKeyword"
+                       placeholder="Tìm kiếm khách hàng theo tên hoặc CCCD..."
+                       class="customer-search-input">
+                <button type="button" (click)="searchCustomers()" class="btn-customer-search">
+                  Tìm kiếm
+                </button>
+              </div>
+            </div>
+            <div *ngFor="let customer of availableCustomers" class="customer-item">
+              <label class="radio-label">
+                <input type="radio" name="selectedCustomer" [value]="customer.id"
+                       (change)="onCustomerSelect(customer)">
+                <span>{{customer.fullname}} - {{customer.cccd}}</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="showFormCustomer" class="form-section">
           <h4>Thông tin khách hàng</h4>
           <div class="form-row">
             <div class="form-group">
@@ -219,6 +245,12 @@
           </div>
 
           <div class="form-group">
+            <label for="note">Ghi chú</label>
+            <textarea id="note" [(ngModel)]="newContract.note" name="note"
+                      rows="3" class="form-control"></textarea>
+          </div>
+
+          <div class="form-group">
             <label>Dịch vụ</label>
             <div class="service-list">
               <div *ngFor="let service of availableServices" class="service-item">
@@ -230,12 +262,6 @@
                 </label>
               </div>
             </div>
-          </div>
-
-          <div class="form-group">
-            <label for="note">Ghi chú</label>
-            <textarea id="note" [(ngModel)]="newContract.note" name="note"
-                      rows="3" class="form-control"></textarea>
           </div>
         </div>
 
@@ -252,109 +278,3 @@
     </div>
   </div>
 </div>
-
-<style>
-/* Header với actions */
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-  padding-bottom: 15px;
-  border-bottom: 2px solid #e0e0e0;
-}
-
-.header h2 {
-  margin: 0;
-  color: #333;
-}
-
-.header-actions {
-  display: flex;
-  gap: 10px;
-}
-
-/* Search section */
-.search-section {
-  margin-bottom: 20px;
-}
-
-.search-box {
-  display: flex;
-  gap: 10px;
-  max-width: 600px;
-}
-
-.search-input {
-  flex: 1;
-  padding: 10px 15px;
-  border: 2px solid #ddd;
-  border-radius: 6px;
-  font-size: 14px;
-  transition: all 0.3s ease;
-}
-
-.search-input:focus {
-  outline: none;
-  border-color: #4CAF50;
-  box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
-}
-
-.btn-search {
-  padding: 10px 20px;
-  background: #4CAF50;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: all 0.3s ease;
-}
-
-.btn-search:hover {
-  background: #45a049;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-/* Export button */
-.btn-export-all {
-  padding: 10px 20px;
-  background: #FF9800;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
-  transition: all 0.3s ease;
-}
-
-.btn-export-all:hover {
-  background: #F57C00;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-}
-
-@media (max-width: 768px) {
-  .header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 15px;
-  }
-
-  .header-actions {
-    width: 100%;
-    flex-direction: column;
-  }
-
-  .header-actions button {
-    width: 100%;
-  }
-
-  .search-box {
-    max-width: 100%;
-    flex-direction: column;
-  }
-}
-</style>

@@ -132,14 +132,22 @@ export class UserComponent implements OnInit {
       // Cập nhật user
       this.userService.update(this.editingUserId, this.userDto).subscribe({
         next: (response) => {
-          // Cập nhật user trong danh sách
-          const index = this.users.findIndex(u => u.id === this.editingUserId);
-          if (index !== -1) {
-            this.users[index] = response.data;
+          if (response.success) {
+            const index = this.users.findIndex(u => u.id === this.editingUserId);
+            if (index !== -1) {
+              this.users[index] = response.data;
+            }
+            this.state.isSubmitting = false;
+            this.noti.show(response.message, 'success');
+            this.cancelForm();
+          } else {
+            if (response.errors && response.errors.length > 0) {
+              response.errors.forEach(error => this.noti.show(error, 'error'));
+            } else {
+              this.noti.show(response.message, 'error');
+            }
+            this.state.isSubmitting = false;
           }
-          this.state.isSubmitting = false;
-          this.noti.show('Cập nhật người dùng thành công', 'success');
-          this.cancelForm();
         },
         error: (error) => {
           console.error('Error updating user: ', error);
@@ -151,10 +159,19 @@ export class UserComponent implements OnInit {
       // Tạo user mới
       this.userService.create(this.userDto).subscribe({
         next: (response) => {
-          this.users.push(response.data);
-          this.state.isSubmitting = false;
-          this.noti.show('Tạo người dùng thành công', 'success');
-          this.cancelForm();
+          if (response.success) {
+            this.users.push(response.data);
+            this.state.isSubmitting = false;
+            this.noti.show(response.message, 'success');
+            this.cancelForm();
+          } else {
+            if (response.errors && response.errors.length > 0) {
+              response.errors.forEach(error => this.noti.show(error, 'error'));
+            } else {
+              this.noti.show(response.message, 'error');
+            }
+            this.state.isSubmitting = false;
+          }
         },
         error: (error) => {
           console.error('Error creating user: ', error);
@@ -168,10 +185,18 @@ export class UserComponent implements OnInit {
   deleteUser(id: number) {
     if (confirm('Bạn có chắc chắn muốn xóa người dùng này?')) {
       this.userService.delete(id).subscribe({
-        next: () => {
-          // Xóa user khỏi danh sách
-          this.users = this.users.filter(u => u.id !== id);
-          this.noti.show('Xóa người dùng thành công', 'success');
+        next: (response) => {
+          if (response.success) {
+            // Xóa user khỏi danh sách
+            this.users = this.users.filter(u => u.id !== id);
+            this.noti.show(response.message, 'success');
+          } else {
+            if (response.errors && response.errors.length > 0) {
+              response.errors.forEach(error => this.noti.show(error, 'error'));
+            } else {
+              this.noti.show(response.message, 'error');
+            }
+          }
         },
         error: (error) => {
           console.error('Error deleting user: ', error);

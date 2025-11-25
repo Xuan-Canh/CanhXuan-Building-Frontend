@@ -35,8 +35,8 @@ export class AuthService {
       .pipe(catchError(error => this.handleError(error)));
   }
 
-  forgotPassword(email: string) : Observable<any>{
-    return this.http.post<any>(`${this.authUrl}/forgot-password`, { email })
+  forgotPassword(email: string) : Observable<ApiResponse<any>>{
+    return this.http.post<ApiResponse<any>>(`${this.authUrl}/forgot-password`, { email })
       .pipe(catchError(error => this.handleError(error)));
   }
 

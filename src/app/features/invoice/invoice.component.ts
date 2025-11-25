@@ -84,7 +84,11 @@ export class InvoiceComponent implements OnInit {
   loadContracts() {
     this.contractService.getAll().subscribe({
       next: (response) => {
-        this.contracts = response.data;
+        if (response.success) {
+          this.contracts = response.data;
+        } else {
+          this.noti.show(response.message, 'error')
+        }
       },
       error: () => {
         this.noti.show('Lỗi tải danh sách hợp đồng', 'error');
@@ -266,10 +270,15 @@ export class InvoiceComponent implements OnInit {
 
     this.state.submitting = true;
     this.invoiceService.create(this.newInvoice).subscribe({
-      next: () => {
-        this.noti.show('Tạo hóa đơn thành công', 'success');
-        this.loadInvoices(this.currentPage);
-        this.cancelForm();
+      next: (response) => {
+        if (response.success) {
+          this.noti.show(response.message,'success');
+          this.loadInvoices(this.currentPage);
+          this.cancelForm();
+        } else {
+          this.noti.show(response.message, 'error');
+          this.state.submitting = false;
+        }
       },
       error: (err) => {
         console.error('Lỗi tạo hóa đơn:', err); // Debug

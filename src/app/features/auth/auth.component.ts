@@ -5,6 +5,7 @@ import { FormsModule } from "@angular/forms";
 import { Router } from "@angular/router";
 import { NotificationService } from "../../core/service/notification.service";
 import { UsersService } from '../../core/service/users.service';
+import {error} from "@angular/compiler-cli/src/transformers/util";
 
 @Component({
   selector: 'app-auth',
@@ -97,7 +98,11 @@ export class AuthComponent {
             }
             this.nofificationService.show(response.message, 'success');
           } else {
-            this.nofificationService.show(response.message, 'error');
+            if (response.errors && response.errors.length > 0) {
+              response.errors.forEach(error => this.nofificationService.show(error, 'error'));
+            } else {
+              this.nofificationService.show(response.message, 'error');
+            }
           }
         },
         error: (error) => {
@@ -137,7 +142,11 @@ export class AuthComponent {
             this.nofificationService.show('Đăng ký thành công! Vui lòng đăng nhập.', 'success');
             this.switchMode('login');
           } else {
-            this.nofificationService.show(response.message, 'error');
+            if (response.errors && response.errors.length > 0) {
+              response.errors.forEach(error => this.nofificationService.show(error, 'error'));
+            } else {
+              this.nofificationService.show(response.message, 'error');
+            }
           }
         },
         error: (error) => {
@@ -157,7 +166,16 @@ export class AuthComponent {
     this.authService.forgotPassword(this.resetEmail)
       .subscribe({
         next: (response) => {
-          this.nofificationService.show(response, 'error');
+          if (response.success) {
+            this.nofificationService.show(response.message, 'success');
+            this.switchMode('login');
+          } else {
+            if (response.errors && response.errors.length > 0) {
+              response.errors.forEach(error => this.nofificationService.show(error, 'error'));
+            } else {
+              this.nofificationService.show(response.message, 'error');
+            }
+          }
         },
         error: (error) => {
           console.error('Forgot password error: ', error);
