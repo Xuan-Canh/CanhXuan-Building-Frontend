@@ -207,13 +207,24 @@ export class BuildingComponent implements OnInit {
       : this.buildingService.create(this.newBuilding);
 
     request.subscribe({
-      next: () => {
-        this.noti.show(
-          this.state.editing ? 'Cập nhật thành công' : 'Thêm mới thành công',
-          'success'
-        );
-        this.loadBuildings(this.currentPage);
-        this.cancelForm();
+      next: (response) => {
+        if (response.success) {
+          const message = this.state.editing ? 'Cập nhật thành công' : 'Tạo mới thành công';
+          this.noti.show(message, 'success');
+          this.loadBuildings(this.currentPage);
+          this.cancelForm();
+        } else {
+          if (response.errors.length>0) {
+            response.errors.forEach((error) => {
+              this.noti.show(error, 'error');
+            });
+            this.state.submitting = false;
+          } else {
+            const message = response.message;
+            this.noti.show(message, 'error');
+            this.state.submitting = false;
+          }
+        }
       },
       error: (error) => {
         this.noti.show(error.message , 'error');
@@ -225,9 +236,13 @@ export class BuildingComponent implements OnInit {
   deleteBuilding(id: number) {
     if (confirm('Bạn có chắc muốn xóa chung cư này?')) {
       this.buildingService.delete(id).subscribe({
-        next: () => {
-          this.noti.show('Xóa thành công', 'success');
-          this.loadBuildings(this.currentPage);
+        next: (response) => {
+          if (response.success) {
+            this.noti.show('Xóa thành công', 'success');
+            this.loadBuildings(this.currentPage);
+          } else {
+            this.noti.show('Lỗi khi xóa chung cư', 'error');
+          }
         },
         error: () => this.noti.show('Lỗi khi xóa', 'error')
       });

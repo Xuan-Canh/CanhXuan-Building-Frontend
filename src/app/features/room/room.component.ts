@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RoomService } from '../../core/service/room.service';
-import { Room, RoomDto, RoomImage } from '../../shared/model/room';
+import {CreateRoomDto, Room, RoomDto, RoomImage} from '../../shared/model/room';
 import { Building } from "../../shared/model/building";
 import { BuildingService } from "../../core/service/building.service";
 import { NotificationService } from "../../core/service/notification.service";
@@ -17,7 +17,7 @@ import { NotificationService } from "../../core/service/notification.service";
 export class RoomComponent implements OnInit {
   rooms: Room[] = [];
   buildings: Building[] = [];
-  selectedRoom: RoomDto = this.initRoom();
+  selectedRoom: CreateRoomDto = this.initRoomDto();
   selectedRoomDetail: Room | null = null; // Thêm biến cho chi tiết phòng
   roomImages: RoomImage[] = [];
   showForm: boolean = false;
@@ -39,7 +39,7 @@ export class RoomComponent implements OnInit {
 
   constructor(
     private roomService: RoomService,
-    private buildingService: BuildingService, // Thêm BuildingService
+    private buildingService: BuildingService,
     private noti: NotificationService
   ) {
     const currentRole = localStorage.getItem('role');
@@ -51,14 +51,15 @@ export class RoomComponent implements OnInit {
     this.loadBuildings(0,100);
   }
 
-  initRoom(): RoomDto {
+  initRoomDto(): CreateRoomDto {
     return {
       name: '',
       floor: 0,
       capacity: 0,
       price: 0,
-      status: 'available',
-      description: ''
+      status: 'AVAILABLE',
+      description: '',
+      buildingId: 0
     };
   }
 
@@ -173,24 +174,43 @@ export class RoomComponent implements OnInit {
 
   // CRUD operations
   showCreateForm(): void {
-    this.selectedRoom = this.initRoom();
+    this.selectedRoom = this.initRoomDto();
     this.isEdit = false;
     this.showForm = true;
   }
 
   showEditForm(room: Room): void {
-    this.selectedRoom = { ...room };
+    this.selectedRoom = {
+      name: room.name,
+      floor: room.floor,
+      capacity: room.capacity,
+      price: room.price,
+      status: room.status,
+      description: room.description,
+      buildingId: room.building?.id || 0
+    };
+    this.currentRoomId = room.id;
     this.isEdit = true;
     this.showForm = true;
   }
 
-  saveRoom(id?: number): void {
-    if (this.isEdit && id) {
-      this.roomService.update(id, this.selectedRoom).subscribe({
-        next: () => {
-          this.noti.show('Cập nhật phòng thành công', 'success');
-          this.loadRooms(this.currentPage);
-          this.cancelForm();
+  saveRoom(): void {
+    if (this.isEdit && this.currentRoomId) {
+      this.roomService.update(this.currentRoomId, this.selectedRoom).subscribe({
+        next: (response) => {
+          if (response.success) {
+            this.noti.show(response.message, 'success');
+            this.loadRooms(this.currentPage);
+            this.cancelForm();
+          } else {
+            if (response.errors && response.errors.length>0) {
+              response.errors.forEach((error) => {
+                this.noti.show(error, 'error');
+              });
+            } else {
+              this.noti.show(response.message, 'error');
+            }
+          }
         },
         error: (error) => {
           console.error('Error updating room:', error);
@@ -198,13 +218,23 @@ export class RoomComponent implements OnInit {
         }
       });
     } else {
-      const buildingId = this.selectedRoom.building?.id;
+      const buildingId = this.selectedRoom.buildingId;
       if (buildingId) {
-        this.roomService.create(buildingId, this.selectedRoom).subscribe({
-          next: () => {
-            this.noti.show('Thêm phòng thành công', 'success');
-            this.loadRooms(this.currentPage);
-            this.cancelForm();
+        this.roomService.create(this.selectedRoom).subscribe({
+          next: (response) => {
+            if (response.success) {
+              this.noti.show(response.message, 'success');
+              this.loadRooms(this.currentPage);
+              this.cancelForm();
+            } else {
+              if (response.errors && response.errors.length>0) {
+                response.errors.forEach((error) => {
+                  this.noti.show(error, 'error');
+                });
+              } else {
+                this.noti.show(response.message, 'error');
+              }
+            }
           },
           error: (error) => {
             console.error('Error creating room:', error);
@@ -222,9 +252,13 @@ export class RoomComponent implements OnInit {
 
     if (id && confirm('Bạn có chắc muốn xóa phòng này?')) {
       this.roomService.delete(id).subscribe({
-        next: () => {
-          this.noti.show('Xóa phòng thành công', 'success');
-          this.loadRooms(this.currentPage);
+        next: (response) => {
+          if (response.success) {
+            this.noti.show(response.message, 'success');
+            this.loadRooms(this.currentPage);
+          }  else {
+            this.noti.show(response.message, 'error');
+          }
         },
         error: (error) => {
           console.error('Error deleting room:', error);
@@ -236,7 +270,7 @@ export class RoomComponent implements OnInit {
 
   cancelForm(): void {
     this.showForm = false;
-    this.selectedRoom = this.initRoom();
+    this.selectedRoom = this.initRoomDto();
   }
 
   // View room detail with images - Method mới

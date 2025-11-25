@@ -201,7 +201,7 @@ this.contractService.getAllWithPage(page).subscribe({
   }
 
   showCreateForm() {
-    this.loadRooms()
+    this.loadRooms();
     this.loadServices();
     this.state.showForm = true;
     this.state.isEditing = false;
@@ -211,6 +211,7 @@ this.contractService.getAllWithPage(page).subscribe({
 
   showEditForm(contractId: number) {
     this.loadRooms();
+    this.loadServices();
     this.contractService.getById(contractId).subscribe({
       next: response => {
         const contract = response.data;
@@ -288,6 +289,16 @@ this.contractService.getAllWithPage(page).subscribe({
   isServiceSelected(serviceId: number): boolean {
     return this.selectedServices.includes(serviceId);
   }
+
+  onRoomSelect(roomId: number) {
+  console.log(roomId);
+  const selectedRoom = this.rooms.find(room => room.id == roomId);
+  console.log(selectedRoom);
+  if (selectedRoom) {
+    this.newContract.monthlyRent = selectedRoom.price;
+    this.newContract.depositAmount = selectedRoom.price;
+  }
+}
 
   export(id: number) {
     this.contractService.export(id).subscribe({

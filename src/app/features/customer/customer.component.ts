@@ -31,7 +31,7 @@ export class CustomerComponent implements OnInit {
     email: '',
     dateOfBirth: new Date(),
     address: '',
-    status: 'active',
+    status: 'ACTIVE',
     gender: ''
 };
 
@@ -155,20 +155,45 @@ export class CustomerComponent implements OnInit {
     if (this.state.isEditing) {
       this.customerService.update(this.edittingId, this.customerDto ).subscribe({
         next: response => {
-          this.noti.show("Customer updated successfully", 'success');
+          if (response.success) {
+            this.noti.show(response.message, 'success');
+            this.state.isSubmitting = false;
+            this.cancelForm();
+            this.loadCustomers(this.currentPage);
+          } else {
+            if (response.errors && response.errors.length > 0) {
+              this.state.isSubmitting = false;
+              response.errors.forEach(err => this.noti.show(err, 'error'));
+            } else {
+              this.state.isSubmitting = false;
+              this.noti.show(response.message, 'error');
+            }
+          }
+        },
+        error: err => {
+          this.noti.show("Failed to update customer", 'error');
           this.state.isSubmitting = false;
-          this.cancelForm();
-          this.loadCustomers(this.currentPage);
         }
-      })
+      });
     }
     else {
       this.customerService.create(this.customerDto).subscribe({
         next: response => {
-          this.noti.show("Customer created successfully", 'success');
-          this.state.isSubmitting = false;
-          this.cancelForm();
-          this.loadCustomers(this.currentPage);
+          if (response.success) {
+            this.noti.show(response.message, 'success');
+            this.state.isSubmitting = false;
+            this.cancelForm();
+            this.loadCustomers(this.currentPage);
+          } else {
+            if (response.errors && response.errors.length > 0) {
+              this.state.isSubmitting = false;
+              response.errors.forEach(err => this.noti.show(err, 'error'));
+            } else {
+              this.state.isSubmitting = false;
+              this.noti.show(response.message, 'error');
+            }
+          }
+
         },
         error: err => {
           this.noti.show("Failed to create customer", 'error');
@@ -264,7 +289,7 @@ export class CustomerComponent implements OnInit {
       email: '',
       dateOfBirth: new Date(),
       address: '',
-      status: 'active',
+      status: 'ACTIVE',
       gender: ''
     }
   }

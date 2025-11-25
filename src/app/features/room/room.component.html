@@ -99,8 +99,8 @@
     <form (ngSubmit)="saveRoom()">
       <div class="form-group">
         <label>Tòa nhà *</label>
-        <select [(ngModel)]="selectedRoom.building" name="building" required>
-          <option *ngFor="let building of buildings" [ngValue]="building">{{building.name}}</option>
+        <select [(ngModel)]="selectedRoom.buildingId" name="buildingId" required>
+          <option *ngFor="let building of buildings" [ngValue]="building.id">{{building.name}}</option>
         </select>
       </div>
       <div class="form-group">

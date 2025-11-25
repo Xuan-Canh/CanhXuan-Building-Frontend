@@ -70,20 +70,31 @@ export class AuthComponent {
     }
   }
 
-  // Handle Login
   handleLogin() {
     this.authService.login(this.username, this.password)
       .subscribe({
         next: (response) => {
           if (response.success) {
+            // Set authentication state
+
+            localStorage.setItem('username', response.data.username);
             this.authService.setLoggedIn(true);
+            this.authService.setUserAvatar(response.data.userAvatar);
+            this.authService.setRole(response.data.role);
+
             console.log('Login successful', response);
+
+            // Save to localStorage
             localStorage.setItem('accessToken', response.data.accessToken);
             localStorage.setItem('refreshToken', response.data.refreshToken);
-            localStorage.setItem('username', response.data.username);
-            localStorage.setItem('role', response.data.role);
             localStorage.setItem('userAvatar', response.data.userAvatar);
-            this.router.navigate(['/dashboard']);
+            localStorage.setItem('role', response.data.role);
+
+            if(response.data.role === 'ADMIN') {
+              this.router.navigate(['/dashboard']);
+            } else {
+              this.router.navigate(['/buildings'])
+            }
             this.nofificationService.show(response.message, 'success');
           } else {
             this.nofificationService.show(response.message, 'error');
@@ -95,6 +106,7 @@ export class AuthComponent {
         }
       });
   }
+
 
   // Handle Register
   handleRegister() {

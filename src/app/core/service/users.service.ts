@@ -24,7 +24,7 @@ export class UsersService {
     return this.http.get<ApiResponse<User>>(`${this.profileUrl}/${username}`);
   }
 
-  getAvatarUrl(username: string, avatarUrl: string): string {
+  getAvatarUrl(username: string | null, avatarUrl: string | null): string {
     return `${this.profileUrl}/${username}/image/${avatarUrl}`;
   }
 

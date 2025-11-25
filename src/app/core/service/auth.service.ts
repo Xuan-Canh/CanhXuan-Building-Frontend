@@ -12,7 +12,11 @@ export class AuthService {
 
   private authUrl = 'http://localhost:8080/canhxuan/auth'
   private loggedInSubject = new BehaviorSubject<boolean>(this.isLoggedIn());
+  private userAvatarSubject = new BehaviorSubject<string>('assets/avatar.png');
+  private roleSubject = new BehaviorSubject<string | null>(localStorage.getItem('role'));
   loggedIn$ = this.loggedInSubject.asObservable();
+  userAvatar$ = this.userAvatarSubject.asObservable();
+  role$ = this.roleSubject.asObservable();
 
   constructor(private http: HttpClient) { }
 
@@ -49,6 +53,21 @@ export class AuthService {
   setLoggedIn(value: boolean) {
     this.loggedInSubject.next(value);
   }
+
+  setUserAvatar(avatarUrl: string) {
+    localStorage.setItem('userAvatar', avatarUrl);
+    this.userAvatarSubject.next(avatarUrl);
+  }
+
+  setRole(role: string) {
+    localStorage.setItem('role', role);
+    this.roleSubject.next(role);
+  }
+
+  getRole() {
+    return this.roleSubject.value;
+  }
+
 
   private handleError(error: HttpErrorResponse) {
     console.error('Auth error: ', error);

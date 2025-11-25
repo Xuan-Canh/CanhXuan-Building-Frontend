@@ -1,8 +1,9 @@
 // admin-sidebar.component.ts
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { SidebarService } from '../../../core/service/sidebar.service';
+import {AuthService} from "../../../core/service/auth.service";
 
 interface MenuItem {
   label: string;
@@ -20,7 +21,7 @@ interface MenuItem {
 })
 export class AdminSidebarComponent {
   menuItems: MenuItem[] = [
-    { label: 'Dashboard', route: '/dashboard', icon: '🏢', roleExpect: ['USER', 'ADMIN'] },
+    { label: 'Dashboard', route: '/dashboard', icon: '🏢', roleExpect: ['ADMIN'] },
     { label: 'Tòa nhà', route: '/buildings', icon: '🏢', roleExpect: ['USER', 'ADMIN'] },
     { label: 'Phòng', route: '/rooms', icon: '🚪', roleExpect: ['USER', 'ADMIN'] },
     { label: 'Khách hàng', route: '/customers', icon: '👥', roleExpect: ['ADMIN'] },
@@ -33,13 +34,20 @@ export class AdminSidebarComponent {
   currentRole: string | null = null;
   isCollapsed = false;
 
-  constructor(private sidebarService: SidebarService) {
+  constructor(private sidebarService: SidebarService, private authService: AuthService) {
     this.currentRole = localStorage.getItem('role');
 
     this.sidebarService.collapsed$.subscribe(collapsed => {
       this.isCollapsed = collapsed;
     });
+
+    // Subscribe to role changes
+    this.authService.role$.subscribe(role => {
+      this.currentRole = role;
+    });
   }
+
+
 
   // Kiểm tra xem user có quyền truy cập menu item không
   hasAccess(item: MenuItem): boolean {

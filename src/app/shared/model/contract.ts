@@ -14,6 +14,7 @@ export interface ContractDto {
   services: Service[];
 }
 
+
 export interface Contract {
   id: number;
   customer: Customer;

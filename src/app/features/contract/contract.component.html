@@ -178,7 +178,7 @@
           <h4>Thông tin hợp đồng</h4>
           <div class="form-group">
             <label for="roomId">Phòng <span class="required">*</span></label>
-            <select id="roomId" [(ngModel)]="newContract.roomId" name="roomId" required class="form-control">
+            <select id="roomId" [(ngModel)]="newContract.roomId" (change)="onRoomSelect(newContract.roomId)" name="roomId" required class="form-control">
               <option value="0">Chọn phòng</option>
               <option *ngFor="let room of rooms" [value]="room.id">{{room.name}} - {{room.building?.name || 'N/A'}}</option>
             </select>

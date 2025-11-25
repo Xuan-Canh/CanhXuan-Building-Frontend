@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import {Room, RoomDto, RoomImage} from '../../shared/model/room';
+import {CreateRoomDto, Room, RoomDto, RoomImage} from '../../shared/model/room';
 import {environment} from "../../shared/model/enviroment";
 import {ApiResponse, Page} from "../../shared/model/api-response";
 import { CrudService } from './generic/crud.service';
@@ -32,11 +32,11 @@ export class RoomService {
     return this.http.get<ApiResponse<Room>>(`${this.apiUrl}/${id}`);
   }
 
-  create(buildingId: number, roomDto: RoomDto): Observable<ApiResponse<Room>> {
-    return this.http.post<ApiResponse<Room>>(`${this.apiUrl}/building/${buildingId}`, roomDto);
+  create(request: CreateRoomDto): Observable<ApiResponse<Room>> {
+    return this.http.post<ApiResponse<Room>>(`${this.apiUrl}`, request);
   }
 
-  update(id: number, roomDto: RoomDto): Observable<ApiResponse<Room>> {
+  update(id: number, roomDto: CreateRoomDto): Observable<ApiResponse<Room>> {
     return this.http.put<ApiResponse<Room>>(`${this.apiUrl}/${id}`, roomDto);
   }
 

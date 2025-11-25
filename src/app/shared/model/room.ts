@@ -1,4 +1,9 @@
-export interface RoomDto {
+export interface RoomDto extends CreateRoomDto {
+
+  building?: any;
+}
+
+export interface CreateRoomDto {
   name: string;
   floor: number;
   capacity: number;
@@ -6,7 +11,7 @@ export interface RoomDto {
   status: string;
   description: string;
   images?: RoomImage[];
-  building?: any;
+  buildingId: number;
 }
 
 export interface Room extends RoomDto {

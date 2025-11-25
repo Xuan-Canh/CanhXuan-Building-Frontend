@@ -62,7 +62,7 @@
         <td>{{customer.dateOfBirth | date:'dd/MM/yyyy'}}</td>
         <td>{{customer.address}}</td>
         <td>
-          <span [class]="'status-badge status-' + customer.status.toLowerCase()">
+          <span [class]="'status-badge status-' + customer.status">
             {{customer.status}}
           </span>
         </td>
