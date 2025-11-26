@@ -85,7 +85,7 @@ export class DashboardComponent implements OnInit {
         changeType: 'increase'
       },
       {
-        title: 'Khách hàng',
+        title: 'Khách hàng đã kí hợp đồng',
         value: this.dashboardData.totalCustomers,
         icon: '👥',
         color: 'warning'
