@@ -89,6 +89,10 @@ export class BuildingComponent implements OnInit {
           this.buildings = response.data.content;
           this.currentPage = response.data.number;
           this.totalPage = response.data.totalPages;
+          this.buildings.forEach((building) => {
+            building.mainImage = building.images[0]?.fileName || null;
+            building.imageCount = building.images?.length || 0;
+          });
           this.state.searchState = true;
           this.state.loading = false;
         },
