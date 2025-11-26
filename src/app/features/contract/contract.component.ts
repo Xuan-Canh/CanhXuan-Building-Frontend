@@ -65,6 +65,7 @@ export class ContractComponent implements OnInit {
 
   ngOnInit() {
     this.loadContracts(0);
+    this.loadRooms();
   }
 
   initContract(): ContractDto {
@@ -186,9 +187,9 @@ this.contractService.getAllWithPage(page).subscribe({
 
 
   loadRooms() {
-    this.roomService.getAll(0, 200).subscribe({
+    this.roomService.getAvailableRooms().subscribe({
       next: response => {
-        this.rooms = response.data.content;
+        this.rooms = response.data;
       },
       error: err => {
         this.noti.show('Lỗi tải danh sách phòng', 'error');
@@ -230,14 +231,11 @@ this.contractService.getAllWithPage(page).subscribe({
   }
 
   showEditForm(contractId: number) {
-    this.loadRooms();
     this.loadServices();
     this.contractService.getById(contractId).subscribe({
       next: response => {
         const contract = response.data;
         this.state.isEditing = true;
-        this.showFormCustomer = true;
-        this.state.showForm = true;
         this.state.editingId = contract.id;
         this.newContract = {
           customer: contract.customer,
@@ -250,7 +248,13 @@ this.contractService.getAllWithPage(page).subscribe({
           note: contract.note,
           services: contract.services || []
         };
+        // Đảm bảo phòng hiện tại có trong danh sách
+        if (!this.rooms.find(r => r.id === contract.room.id)) {
+          this.rooms = [...this.rooms, contract.room];
+        }
         this.selectedServices = contract.services?.map(s => s.id) || [];
+        this.showFormCustomer = true;
+        this.state.showForm = true;
       },
       error: err => {
         this.noti.show('Lỗi tải thông tin hợp đồng', 'error');
@@ -407,6 +411,8 @@ this.contractService.getAllWithPage(page).subscribe({
     this.state.isEditing = false;
     this.state.editingId = 0;
     this.newContract = this.initContract();
+    this.customerKeyword = '';
+    this.availableCustomers = [];
     this.selectedServices = [];
   }
 }

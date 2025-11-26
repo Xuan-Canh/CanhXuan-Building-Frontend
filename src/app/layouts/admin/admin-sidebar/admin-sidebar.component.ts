@@ -27,7 +27,7 @@ export class AdminSidebarComponent {
     { label: 'Khách hàng', route: '/customers', icon: '👥', roleExpect: ['ADMIN'] },
     { label: 'Hợp đồng', route: '/contracts', icon: '📄', roleExpect: ['USER', 'ADMIN'] },
     { label: 'Dịch vụ', route: '/services', icon: '🔧', roleExpect: ['ADMIN'] },
-    { label: 'Hóa đơn', route: '/invoices', icon: '🧾', roleExpect: ['ADMIN'] },
+    { label: 'Hóa đơn', route: '/invoices', icon: '🧾', roleExpect: ['ADMIN', 'USER'] },
     { label: 'Người dùng', route: '/users', icon: '👤', roleExpect: ['ADMIN'] }
   ];
 

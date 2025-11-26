@@ -1,6 +1,7 @@
 import { Customer } from "./customer";
 import { Room } from "./room";
 import { Service } from "./service";
+import { User } from "./user";
 
 export interface ContractDto {
   customer: Customer;

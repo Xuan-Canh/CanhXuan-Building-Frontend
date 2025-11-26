@@ -24,8 +24,8 @@ export class RoomService {
     return this.crudService.searchWithPage('rooms', keyword, page);
   }
 
-  getByBuildingId(buildingId: number): Observable<ApiResponse<Room[]>> {
-    return this.http.get<ApiResponse<Room[]>>(`${this.apiUrl}/building/${buildingId}`);
+  getAvailableRooms(): Observable<ApiResponse<Room[]>> {
+    return this.http.get<ApiResponse<Room[]>>(`${this.apiUrl}/available`);
   }
 
   getById(id: number): Observable<ApiResponse<Room>> {

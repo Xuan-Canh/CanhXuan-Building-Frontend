@@ -64,7 +64,7 @@
           <button class="btn-export" (click)="export(contract.id)" title="Xuất báo cáo">
             📄
           </button>
-          <button *ngIf="isAdmin" class="btn-edit" (click)="showEditForm(contract.id)" title="Chỉnh sửa">
+          <button class="btn-edit" (click)="showEditForm(contract.id)" title="Chỉnh sửa">
             ✏️
           </button>
           <button *ngIf="isAdmin" class="btn-delete" (click)="deleteContract(contract.id)" title="Xóa">
@@ -205,8 +205,8 @@
           <div class="form-group">
             <label for="roomId">Phòng <span class="required">*</span></label>
             <select id="roomId" [(ngModel)]="newContract.roomId" (change)="onRoomSelect(newContract.roomId)" name="roomId" required class="form-control">
-              <option value="0">Chọn phòng</option>
-              <option *ngFor="let room of rooms" [value]="room.id">{{room.name}} - {{room.building?.name || 'N/A'}}</option>
+              <option [ngValue]="0">Chọn phòng</option>
+              <option *ngFor="let room of rooms" [ngValue]="room.id">{{room.name}} - {{room.building?.name || 'N/A'}}</option>
             </select>
           </div>
 
