@@ -6,6 +6,7 @@ import { NotificationComponent } from "./shared/notification/notification.compon
 import { AdminFooterComponent } from "./layouts/admin/admin-footer/admin-footer.component";
 import { SidebarService } from './core/service/sidebar.service';
 import { CommonModule } from '@angular/common';
+import {PopupComponent} from "./shared/popup/popup.component";
 
 @Component({
   selector: 'app-root',
@@ -16,7 +17,8 @@ import { CommonModule } from '@angular/common';
     AdminSidebarComponent,
     NotificationComponent,
     AdminFooterComponent,
-    CommonModule
+    CommonModule,
+    PopupComponent
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'

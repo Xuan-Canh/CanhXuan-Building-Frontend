@@ -6,6 +6,7 @@ import {BuildingImageService} from "../../core/service/building-image.service";
 import {CommonModule} from "@angular/common";
 import {FormsModule} from "@angular/forms";
 import {forkJoin} from 'rxjs';
+import {PopupService} from "../../core/service/popup.service";
 
 @Component({
   selector: 'app-building',
@@ -46,7 +47,8 @@ export class BuildingComponent implements OnInit {
   constructor(
     private buildingService: BuildingService,
     private imageService: BuildingImageService,
-    private noti: NotificationService
+    private noti: NotificationService,
+    private popup: PopupService
   ) {
     const currentRole = localStorage.getItem('role');
     this.isAdmin = currentRole === 'ADMIN';
@@ -237,15 +239,21 @@ export class BuildingComponent implements OnInit {
     });
   }
 
-  deleteBuilding(id: number) {
-    if (confirm('Bạn có chắc muốn xóa chung cư này?')) {
+  async deleteBuilding(id: number) {
+    const confirmed = await this.popup.show({
+      title: 'Xóa chung cư',
+      message: 'Bạn có chắc chắn muốn xóa chung cư này? Hành động này không thể hoàn tác.',
+      confirmText: '🗑️ Xóa',
+      cancelText: '✕ Hủy',
+      type: 'danger'
+    });
+
+    if (confirmed) {
       this.buildingService.delete(id).subscribe({
         next: (response) => {
           if (response.success) {
             this.noti.show('Xóa thành công', 'success');
             this.loadBuildings(this.currentPage);
-          } else {
-            this.noti.show('Lỗi khi xóa chung cư', 'error');
           }
         },
         error: () => this.noti.show('Lỗi khi xóa', 'error')
@@ -310,8 +318,16 @@ export class BuildingComponent implements OnInit {
     });
   }
 
-  deleteImage(buildingId: number, imageId: number) {
-    if (confirm('Bạn có chắc muốn xóa ảnh này?')) {
+  async deleteImage(buildingId: number, imageId: number) {
+    const confirmed = await this.popup.show({
+      title: 'Xóa hình ảnh',
+      message: 'Bạn có chắc chắn muốn xóa hình ảnh này?',
+      confirmText: '🗑️ Xóa',
+      cancelText: '✕ Hủy',
+      type: 'warning'
+    });
+
+    if (confirmed) {
       this.imageService.deleteBuildingImage(buildingId, imageId).subscribe({
         next: () => {
           this.noti.show('Xóa ảnh thành công', 'success');
@@ -320,7 +336,7 @@ export class BuildingComponent implements OnInit {
           this.buildingService.getById(buildingId).subscribe({
             next: (response) => {
               this.editingBuilding = response.data;
-              this.loadBuildings(this.currentPage); // Cập nhật list
+              this.loadBuildings(this.currentPage);
             }
           });
         },
