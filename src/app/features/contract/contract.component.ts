@@ -12,6 +12,7 @@ import { NotificationService } from "../../core/service/notification.service";
 import {CrudService} from "../../core/service/generic/crud.service";
 import {CustomerService} from "../../core/service/customer.service";
 import {error} from "@angular/compiler-cli/src/transformers/util";
+import {PopupService} from "../../core/service/popup.service";
 
 @Component({
   selector: 'app-contract',
@@ -57,7 +58,8 @@ export class ContractComponent implements OnInit {
     private roomService: RoomService,
     private serviceService: ServiceService,
     private noti: NotificationService,
-    private crudService: CrudService
+    private crudService: CrudService,
+    private popup: PopupService
   ) {
     const currentRole = localStorage.getItem('role');
     this.isAdmin = currentRole === 'ADMIN';
@@ -387,16 +389,24 @@ this.contractService.getAllWithPage(page).subscribe({
   }
 
 
-  deleteContract(id: number) {
-    if (confirm('Bạn có chắc muốn xóa hợp đồng này?')) {
+  async deleteContract(id: number) {
+    const confirmed = await this.popup.show({
+      title: 'Xóa chung cư',
+      message: 'Bạn có chắc chắn muốn xóa chung cư này? Hành động này không thể hoàn tác.',
+      confirmText: '🗑️ Xóa',
+      cancelText: '✕ Hủy',
+      type: 'danger'
+    });
+
+    if (confirmed) {
       this.contractService.delete(id).subscribe({
-        next: () => {
-          this.noti.show('Xóa thành công', 'success');
-          this.loadContracts(this.currentPage);
+        next: (response) => {
+          if (response.success) {
+            this.noti.show('Xóa thành công', 'success');
+            this.loadContracts(this.currentPage);
+          }
         },
-        error: err => {
-          this.noti.show('Lỗi khi xóa', 'error');
-        }
+        error: () => this.noti.show('Lỗi khi xóa', 'error')
       });
     }
   }

@@ -4,6 +4,7 @@ import {User, UserDto} from "../../shared/model/user";
 import {CommonModule} from "@angular/common";
 import {FormsModule} from "@angular/forms";
 import { NotificationService } from '../../core/service/notification.service';
+import {PopupService} from "../../core/service/popup.service";
 
 @Component({
   selector: 'app-user',
@@ -28,7 +29,8 @@ export class UserComponent implements OnInit {
 
   constructor(
     private userService: UsersService,
-    private noti: NotificationService
+    private noti: NotificationService,
+    private popup: PopupService
   ) {}
 
   ngOnInit() {
@@ -182,8 +184,16 @@ export class UserComponent implements OnInit {
     }
   }
 
-  deleteUser(id: number) {
-    if (confirm('Bạn có chắc chắn muốn xóa người dùng này?')) {
+  async deleteUser(id: number) {
+    const confirmed = await this.popup.show({
+      title: 'Xóa chung cư',
+      message: 'Bạn có chắc chắn muốn xóa chung cư này? Hành động này không thể hoàn tác.',
+      confirmText: '🗑️ Xóa',
+      cancelText: '✕ Hủy',
+      type: 'danger'
+    });
+
+    if (confirmed) {
       this.userService.delete(id).subscribe({
         next: (response) => {
           if (response.success) {

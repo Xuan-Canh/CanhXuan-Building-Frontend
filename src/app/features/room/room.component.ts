@@ -6,6 +6,7 @@ import {CreateRoomDto, Room, RoomDto, RoomImage} from '../../shared/model/room';
 import { Building } from "../../shared/model/building";
 import { BuildingService } from "../../core/service/building.service";
 import { NotificationService } from "../../core/service/notification.service";
+import {PopupService} from "../../core/service/popup.service";
 
 @Component({
   selector: 'app-room',
@@ -40,7 +41,8 @@ export class RoomComponent implements OnInit {
   constructor(
     private roomService: RoomService,
     private buildingService: BuildingService,
-    private noti: NotificationService
+    private noti: NotificationService,
+    private popup: PopupService
   ) {
     const currentRole = localStorage.getItem('role');
     this.isAdmin = currentRole === 'ADMIN';
@@ -247,23 +249,24 @@ export class RoomComponent implements OnInit {
     }
   }
 
-  deleteRoom(id: number | undefined): void {
-    if (!this.isAdmin) return;
+  async deleteRoom(id: number) {
+    const confirmed = await this.popup.show({
+      title: 'Xóa chung cư',
+      message: 'Bạn có chắc chắn muốn xóa chung cư này? Hành động này không thể hoàn tác.',
+      confirmText: '🗑️ Xóa',
+      cancelText: '✕ Hủy',
+      type: 'danger'
+    });
 
-    if (id && confirm('Bạn có chắc muốn xóa phòng này?')) {
+    if (confirmed) {
       this.roomService.delete(id).subscribe({
         next: (response) => {
           if (response.success) {
-            this.noti.show(response.message, 'success');
+            this.noti.show('Xóa thành công', 'success');
             this.loadRooms(this.currentPage);
-          }  else {
-            this.noti.show(response.message, 'error');
           }
         },
-        error: (error) => {
-          console.error('Error deleting room:', error);
-          this.noti.show('Lỗi xóa phòng', 'error');
-        }
+        error: () => this.noti.show('Lỗi khi xóa', 'error')
       });
     }
   }
@@ -362,19 +365,22 @@ export class RoomComponent implements OnInit {
     });
   }
 
-  deleteImage(imageId: number): void {
-    if (!this.isAdmin) return;
+  async deleteImage(imageId: number) {
+    const confirmed = await this.popup.show({
+      title: 'Xóa hình ảnh',
+      message: 'Bạn có chắc chắn muốn xóa hình ảnh này?',
+      confirmText: '🗑️ Xóa',
+      cancelText: '✕ Hủy',
+      type: 'warning'
+    });
 
-    if (this.currentRoomId && confirm('Bạn có chắc muốn xóa hình ảnh này?')) {
+    if (confirmed) {
       this.roomService.deleteImage(this.currentRoomId, imageId).subscribe({
         next: () => {
           this.noti.show('Xóa ảnh thành công', 'success');
           this.loadRoomImages(this.currentRoomId);
         },
-        error: (error) => {
-          console.error('Error deleting image:', error);
-          this.noti.show('Lỗi xóa ảnh', 'error');
-        }
+        error: () => this.noti.show('Lỗi khi xóa ảnh', 'error')
       });
     }
   }

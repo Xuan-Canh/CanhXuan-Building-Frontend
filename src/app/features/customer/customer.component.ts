@@ -5,6 +5,7 @@ import {Customer, CustomerDto} from "../../shared/model/customer";
 import {CommonModule} from "@angular/common";
 import {FormsModule} from "@angular/forms";
 import {CrudService} from "../../core/service/generic/crud.service";
+import {PopupService} from "../../core/service/popup.service";
 
 @Component({
   selector: 'app-customer',
@@ -49,7 +50,8 @@ export class CustomerComponent implements OnInit {
 
   constructor(private customerService: CustomerService,
               private noti: NotificationService,
-              private crudService: CrudService) {
+              private crudService: CrudService,
+              private popup: PopupService) {
   }
 
   ngOnInit() {
@@ -233,16 +235,26 @@ export class CustomerComponent implements OnInit {
     this.customerDto = customer;
   }
 
-  onDelete(customerId: number) {
-    this.customerService.delete(customerId).subscribe({
-      next: response => {
-        this.noti.show("Customer deleted successfully", 'success');
-        this.loadCustomers(this.currentPage);
-      },
-      error: err => {
-        this.noti.show("Failed to delete customer", 'error');
-      }
+  async onDelete(customerId: number) {
+    const confirmed = await this.popup.show({
+      title: 'Xóa chung cư',
+      message: 'Bạn có chắc chắn muốn xóa chung cư này? Hành động này không thể hoàn tác.',
+      confirmText: '🗑️ Xóa',
+      cancelText: '✕ Hủy',
+      type: 'danger'
     });
+
+    if (confirmed) {
+      this.customerService.delete(customerId).subscribe({
+        next: (response) => {
+          if (response.success) {
+            this.noti.show('Xóa thành công', 'success');
+            this.loadCustomers(this.currentPage);
+          }
+        },
+        error: () => this.noti.show('Lỗi khi xóa', 'error')
+      });
+    }
   }
 
   viewDetails(customerid: number) {

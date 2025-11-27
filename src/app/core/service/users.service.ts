@@ -47,6 +47,6 @@ export class UsersService {
   }
 
   delete(userId: number) : Observable<ApiResponse<any>> {
-    return this.crudService.delete('user', userId);
+    return this.crudService.delete('users', userId);
   }
 }

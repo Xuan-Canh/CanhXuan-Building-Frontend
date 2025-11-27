@@ -3,6 +3,8 @@ import {ServiceService} from "../../core/service/service.service";
 import {Service, ServiceDto} from "../../shared/model/service";
 import {CommonModule} from "@angular/common";
 import {FormsModule} from "@angular/forms";
+import {PopupService} from "../../core/service/popup.service";
+import {NotificationService} from "../../core/service/notification.service";
 
 @Component({
   selector: 'app-serviceService',
@@ -42,7 +44,9 @@ export class ServiceComponent implements OnInit{
     }
   }
 
-  constructor(private serviceService: ServiceService) {
+  constructor(private serviceService: ServiceService,
+              private noti: NotificationService,
+              private popup: PopupService) {
   }
 
   ngOnInit() {
@@ -135,10 +139,23 @@ export class ServiceComponent implements OnInit{
       this.state.isSubmitting = true;
       this.serviceService.update(this.edittingId, this.serviceDto).subscribe({
         next: response => {
-          console.log('Service updated successfully');
-          this.state.isSubmitting = false;
-          this.cancelForm();
-          this.loadServices(this.currentPage);
+          if (response.success) {
+            console.log('Service updated successfully');
+            this.noti.show(response.message, 'success');
+            this.state.isSubmitting = false;
+            this.cancelForm();
+            this.loadServices(this.currentPage);
+          } else {
+            if (response.errors && response.errors.length > 0) {
+              response.errors.forEach(error => {
+                this.noti.show(error, 'error');
+              });
+            } else {
+              this.noti.show(response.message, 'error');
+            }
+            this.state.isSubmitting = false;
+          }
+
         },
         error: err => {
           console.log('Failed to update service', err);
@@ -149,10 +166,22 @@ export class ServiceComponent implements OnInit{
       this.state.isSubmitting = true;
       this.serviceService.create(this.serviceDto).subscribe({
         next: response => {
-          console.log('Service created successfully');
-          this.state.isSubmitting = false;
-          this.cancelForm();
-          this.loadServices(this.currentPage);
+          if (response.success) {
+            console.log('Service created successfully');
+            this.noti.show(response.message, 'success');
+            this.state.isSubmitting = false;
+            this.cancelForm();
+            this.loadServices(this.currentPage);
+          } else {
+            if (response.errors && response.errors.length > 0) {
+              response.errors.forEach(error => {
+                this.noti.show(error, 'error');
+              });
+            } else {
+              this.noti.show(response.message, 'error');
+            }
+            this.state.isSubmitting = false;
+          }
         },
         error: err => {
           console.log('Failed to create service', err);
@@ -162,15 +191,26 @@ export class ServiceComponent implements OnInit{
     }
   }
 
-  deleteService(serviceId: number) {
-    this.serviceService.delete(serviceId).subscribe({
-      next: response => {
-        console.log('Service deleted successfully');
-        this.loadServices(this.currentPage);
-      },
-      error: err => {
-        console.log('Failed to delete service', err);
-      }
+
+  async deleteService(serviceId: number) {
+    const confirmed = await this.popup.show({
+      title: 'Xóa chung cư',
+      message: 'Bạn có chắc chắn muốn xóa chung cư này? Hành động này không thể hoàn tác.',
+      confirmText: '🗑️ Xóa',
+      cancelText: '✕ Hủy',
+      type: 'danger'
     });
+
+    if (confirmed) {
+      this.serviceService.delete(serviceId).subscribe({
+        next: (response) => {
+          if (response.success) {
+            this.noti.show('Xóa thành công', 'success');
+            this.loadServices(this.currentPage);
+          }
+        },
+        error: () => this.noti.show('Lỗi khi xóa', 'error')
+      });
+    }
   }
 }
