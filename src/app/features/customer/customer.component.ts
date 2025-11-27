@@ -274,11 +274,12 @@ export class CustomerComponent implements OnInit {
 
   cancelForm() {
     this.state.showForm = false;
+    this.state.isEditing = false;
     this.resetForm();
   }
 
   resetForm() {
-    this.initCustomerDto();
+    this.customerDto = this.initCustomerDto();
   }
 
   private initCustomerDto() : CustomerDto {

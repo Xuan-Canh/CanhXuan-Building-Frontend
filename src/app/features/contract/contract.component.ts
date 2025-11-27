@@ -358,14 +358,14 @@ this.contractService.getAllWithPage(page).subscribe({
 
   exportToExcel(fileName: string) {
     this.state.isLoading = true;
-    return this.crudService.exportToExcel('customers')
+    return this.crudService.exportToExcel('contracts')
       .subscribe({
         next: (blob) => {
           const timestamp = new Date().toISOString().replace(/[-:]/g, '').split('.')[0];
           const fileExportedName = `${fileName}_${timestamp}.xlsx`;
           this.crudService.downloadFile(blob, fileExportedName);
           this.state.isLoading = false;
-          this.noti.show('Export customers to excel successfully', 'success');
+          this.noti.show('Export contracts to excel successfully', 'success');
         },
         error: (err) => {
           this.state.isLoading = false;

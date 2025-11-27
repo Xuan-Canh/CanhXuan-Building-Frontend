@@ -39,7 +39,7 @@ export const routes: Routes = [
     path: 'services', component: ServiceComponent, canActivate: [authGuard, roleGuard], data: {roles: 'ADMIN'}
   },
   {
-    path: 'invoices', component: InvoiceComponent, canActivate: [authGuard, roleGuard], data: {roles: 'ADMIN, USER'}
+    path: 'invoices', component: InvoiceComponent, canActivate: [authGuard, roleGuard], data: {roles: 'ADMIN'}
   },
   {
     path: 'orders', component: OrderComponent
