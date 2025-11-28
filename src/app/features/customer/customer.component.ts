@@ -250,6 +250,12 @@ export class CustomerComponent implements OnInit {
           if (response.success) {
             this.noti.show('Xóa thành công', 'success');
             this.loadCustomers(this.currentPage);
+          } else {
+            if(response.errors && response.errors.length > 0) {
+              response.errors.forEach(err => this.noti.show(err, 'error'));
+            } else {
+              this.noti.show(response.message, 'error');
+            }
           }
         },
         error: () => this.noti.show('Lỗi khi xóa', 'error')
